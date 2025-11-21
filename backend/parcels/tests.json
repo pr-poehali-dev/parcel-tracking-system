@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "name": "Get all parcels",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Get parcel by tracking code",
+      "method": "GET",
+      "path": "/?tracking_code=AB2024001",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "tracking_code": "AB2024001",
+        "recipient_first_name": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create new parcel",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "recipient_first_name": "Тест",
+        "recipient_last_name": "Тестов",
+        "recipient_address": "Тестовый адрес",
+        "current_location": "Склад",
+        "status": "pending"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "tracking_code": "string",
+        "recipient_first_name": "Тест"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
