@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
@@ -6,6 +6,7 @@ import { Package } from '@/types/package';
 import { TrackingSearch } from '@/components/TrackingSearch';
 import { PackageManagement } from '@/components/PackageManagement';
 import { PackageDialog } from '@/components/PackageDialog';
+import { AdminLogin } from '@/components/AdminLogin';
 
 const API_URL = 'https://functions.poehali.dev/377be8f8-6ae5-4538-9bd0-310ecc0aeec8';
 
@@ -18,12 +19,20 @@ const statusMap: Record<string, { label: string; variant: 'default' | 'secondary
 
 export default function Index() {
   const [adminView, setAdminView] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [packages, setPackages] = useState<Package[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingPackage, setEditingPackage] = useState<Package | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { toast } = useToast();
+
+  useEffect(() => {
+    const authStatus = localStorage.getItem('admin_authenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const generateTrackingCode = () => {
     const prefix = 'AB';
@@ -147,7 +156,7 @@ export default function Index() {
       <main className="container mx-auto px-4 py-12">
         {!adminView ? (
           <TrackingSearch />
-        ) : (
+        ) : isAuthenticated ? (
           <PackageManagement
             packages={packages}
             isLoading={isLoading}
@@ -156,6 +165,11 @@ export default function Index() {
             onDelete={handleDeletePackage}
             statusMap={statusMap}
           />
+        ) : (
+          <AdminLogin onLoginSuccess={() => {
+            setIsAuthenticated(true);
+            loadPackages();
+          }} />
         )}
       </main>
 
