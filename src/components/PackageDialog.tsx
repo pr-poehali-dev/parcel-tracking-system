@@ -17,6 +17,12 @@ interface PackageDialogProps {
 }
 
 export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, generateTrackingCode }: PackageDialogProps) {
+  const getDefaultDeliveryDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState<Partial<Package>>({
     tracking_code: generateTrackingCode(),
     sender_name: '',
@@ -27,6 +33,7 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
     status: 'pending',
     origin: '',
     destination: '',
+    estimated_delivery: getDefaultDeliveryDate(),
     notes: '',
   });
 
@@ -44,6 +51,7 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
         status: 'pending',
         origin: '',
         destination: '',
+        estimated_delivery: getDefaultDeliveryDate(),
         notes: '',
       });
     }
@@ -132,18 +140,7 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="weight">Weight (kg)</Label>
-              <Input
-                id="weight"
-                type="number"
-                step="0.01"
-                value={formData.weight}
-                onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
-                required
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="origin">Origin</Label>
               <Input
@@ -159,6 +156,30 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
                 id="destination"
                 value={formData.destination}
                 onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="weight">Weight (kg)</Label>
+              <Input
+                id="weight"
+                type="number"
+                step="0.01"
+                value={formData.weight}
+                onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="estimated_delivery">Estimated Delivery</Label>
+              <Input
+                id="estimated_delivery"
+                type="date"
+                value={formData.estimated_delivery || ''}
+                onChange={(e) => setFormData({ ...formData, estimated_delivery: e.target.value })}
                 required
               />
             </div>
