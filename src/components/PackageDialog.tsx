@@ -16,15 +16,15 @@ interface PackageDialogProps {
   generateTrackingCode: () => string;
 }
 
-export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, generateTrackingCode }: PackageDialogProps) {
-  const getDefaultDeliveryDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() + 7);
-    return date.toISOString().split('T')[0];
-  };
+const getDefaultDeliveryDate = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return date.toISOString().split('T')[0];
+};
 
+export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, generateTrackingCode }: PackageDialogProps) {
   const [formData, setFormData] = useState<Partial<Package>>({
-    tracking_code: generateTrackingCode(),
+    tracking_code: '',
     sender_name: '',
     sender_address: '',
     recipient_name: '',
@@ -33,29 +33,31 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
     status: 'pending',
     origin: '',
     destination: '',
-    estimated_delivery: getDefaultDeliveryDate(),
+    estimated_delivery: '',
     notes: '',
   });
 
   useEffect(() => {
-    if (editingPackage) {
-      setFormData(editingPackage);
-    } else {
-      setFormData({
-        tracking_code: generateTrackingCode(),
-        sender_name: '',
-        sender_address: '',
-        recipient_name: '',
-        recipient_address: '',
-        weight: 0,
-        status: 'pending',
-        origin: '',
-        destination: '',
-        estimated_delivery: getDefaultDeliveryDate(),
-        notes: '',
-      });
+    if (isOpen) {
+      if (editingPackage) {
+        setFormData(editingPackage);
+      } else {
+        setFormData({
+          tracking_code: generateTrackingCode(),
+          sender_name: '',
+          sender_address: '',
+          recipient_name: '',
+          recipient_address: '',
+          weight: 0,
+          status: 'pending',
+          origin: '',
+          destination: '',
+          estimated_delivery: getDefaultDeliveryDate(),
+          notes: '',
+        });
+      }
     }
-  }, [editingPackage, isOpen]);
+  }, [isOpen, editingPackage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
