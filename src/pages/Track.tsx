@@ -5,7 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Package } from '@/types/package';
-import { getCountryCode, getCountryFlagEmoji } from '@/utils/countries';
+import { CountryFlag } from '@/components/ui/country-flag';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+
+interface TrackingHistory {
+  id: number;
+  location: string;
+  status: string;
+  description: string;
+  event_date: string;
+}
 
 const statusConfig = {
   pending: { label: 'Pending', variant: 'secondary' as const, icon: 'Package' },
@@ -19,6 +32,10 @@ export default function Track() {
   const [packageData, setPackageData] = useState<Package | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [trackingHistory, setTrackingHistory] = useState<TrackingHistory[]>([]);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [editingHistory, setEditingHistory] = useState<TrackingHistory | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchPackage = async () => {
@@ -30,6 +47,7 @@ export default function Track() {
         
         if (response.ok && data.success) {
           setPackageData(data.package);
+          await fetchTrackingHistory(data.package.id);
         } else {
           setError(data.error || 'Package not found');
         }
@@ -42,6 +60,68 @@ export default function Track() {
 
     fetchPackage();
   }, [trackingCode]);
+
+  const fetchTrackingHistory = async (packageId: number) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6?package_id=${packageId}`);
+      const data = await response.json();
+      if (data.success) {
+        setTrackingHistory(data.history || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tracking history', err);
+    }
+  };
+
+  const handleAddHistory = async (formData: Partial<TrackingHistory>) => {
+    if (!packageData) return;
+    try {
+      const response = await fetch('https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, package_id: packageData.id }),
+      });
+      if (response.ok) {
+        toast({ title: 'Tracking event added successfully' });
+        setIsHistoryDialogOpen(false);
+        await fetchTrackingHistory(packageData.id);
+      }
+    } catch (error) {
+      toast({ title: 'Failed to add tracking event', variant: 'destructive' });
+    }
+  };
+
+  const handleUpdateHistory = async (formData: TrackingHistory) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        toast({ title: 'Tracking event updated successfully' });
+        setIsHistoryDialogOpen(false);
+        setEditingHistory(null);
+        if (packageData) await fetchTrackingHistory(packageData.id);
+      }
+    } catch (error) {
+      toast({ title: 'Failed to update tracking event', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteHistory = async (historyId: number) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6?id=${historyId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        toast({ title: 'Tracking event deleted successfully' });
+        if (packageData) await fetchTrackingHistory(packageData.id);
+      }
+    } catch (error) {
+      toast({ title: 'Failed to delete tracking event', variant: 'destructive' });
+    }
+  };
 
   if (loading) {
     return (
@@ -121,7 +201,7 @@ export default function Track() {
                   <div>
                     <p className="text-sm text-muted-foreground">Origin</p>
                     <p className="font-medium flex items-center gap-2">
-                      <span className="text-2xl">{getCountryFlagEmoji(getCountryCode(packageData.origin))}</span>
+                      <CountryFlag countryName={packageData.origin} />
                       {packageData.origin}
                     </p>
                   </div>
@@ -136,7 +216,7 @@ export default function Track() {
                   <div>
                     <p className="text-sm text-muted-foreground">Destination</p>
                     <p className="font-medium flex items-center gap-2">
-                      <span className="text-2xl">{getCountryFlagEmoji(getCountryCode(packageData.destination))}</span>
+                      <CountryFlag countryName={packageData.destination} />
                       {packageData.destination}
                     </p>
                   </div>
@@ -144,19 +224,29 @@ export default function Track() {
               </div>
 
               <div className="border-t pt-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Weight</p>
                     <p className="font-medium">{packageData.weight} kg</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Estimated Delivery</p>
+                    <p className="text-sm text-muted-foreground">Shipped Date</p>
                     <p className="font-medium">
-                      {new Date(packageData.estimated_delivery).toLocaleDateString('en-US', {
+                      {packageData.shipped_date ? new Date(packageData.shipped_date).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
-                      })}
+                      }) : 'Not shipped yet'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Delivered Date</p>
+                    <p className="font-medium">
+                      {packageData.delivered_date ? new Date(packageData.delivered_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'Not delivered yet'}
                     </p>
                   </div>
                 </div>
@@ -173,44 +263,162 @@ export default function Track() {
 
           <Card className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Icon name="MapPin" size={20} />
-                Tracking History
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Icon name="MapPin" size={20} />
+                  Tracking History
+                </CardTitle>
+                <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" onClick={() => setEditingHistory(null)}>
+                      <Icon name="Plus" size={16} className="mr-2" />
+                      Add Event
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{editingHistory ? 'Edit' : 'Add'} Tracking Event</DialogTitle>
+                      <DialogDescription>
+                        {editingHistory ? 'Update tracking event details' : 'Add a new tracking event to the package history'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <TrackingHistoryForm
+                      initialData={editingHistory}
+                      onSubmit={editingHistory ? handleUpdateHistory : handleAddHistory}
+                      onCancel={() => setIsHistoryDialogOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-3 h-3 rounded-full bg-primary"></div>
-                    <div className="w-0.5 h-full bg-border"></div>
-                  </div>
-                  <div className="pb-8 flex-1">
-                    <p className="font-semibold">Current Location</p>
-                    <p className="text-sm text-muted-foreground">
-                      {packageData.status === 'delivered' ? packageData.destination : packageData.origin}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(packageData.created_at).toLocaleString('en-US')}
-                    </p>
-                  </div>
+              {trackingHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No tracking events yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {trackingHistory.map((event, index) => (
+                    <div key={event.id} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-primary' : 'bg-muted'}`}></div>
+                        {index < trackingHistory.length - 1 && <div className="w-0.5 h-full bg-border mt-1"></div>}
+                      </div>
+                      <div className="flex-1 pb-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-semibold">{event.location}</p>
+                            <p className="text-sm text-muted-foreground">{event.status}</p>
+                            {event.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(event.event_date).toLocaleString('en-US')}
+                            </p>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingHistory(event);
+                                setIsHistoryDialogOpen(true);
+                              }}
+                            >
+                              <Icon name="Edit" size={14} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteHistory(event.id)}
+                            >
+                              <Icon name="Trash2" size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-3 h-3 rounded-full bg-muted"></div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold">Origin</p>
-                    <p className="text-sm text-muted-foreground">{packageData.origin}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Package registered</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
+  );
+}
+
+function TrackingHistoryForm({
+  initialData,
+  onSubmit,
+  onCancel,
+}: {
+  initialData: TrackingHistory | null;
+  onSubmit: (data: any) => void;
+  onCancel: () => void;
+}) {
+  const [formData, setFormData] = useState<Partial<TrackingHistory>>(
+    initialData || {
+      location: '',
+      status: '',
+      description: '',
+      event_date: new Date().toISOString().slice(0, 16),
+    }
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Location</Label>
+        <Input
+          value={formData.location}
+          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+          placeholder="e.g., New York Distribution Center"
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Status</Label>
+        <Input
+          value={formData.status}
+          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+          placeholder="e.g., In Transit, Arrived, Departed"
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Description</Label>
+        <Textarea
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Additional details about this event"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Event Date & Time</Label>
+        <Input
+          type="datetime-local"
+          value={formData.event_date?.slice(0, 16)}
+          onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
+          required
+        />
+      </div>
+
+      <div className="flex gap-2 justify-end">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit">
+          {initialData ? 'Update' : 'Add'} Event
+        </Button>
+      </div>
+    </form>
   );
 }

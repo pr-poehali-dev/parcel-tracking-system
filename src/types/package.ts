@@ -13,4 +13,6 @@ export interface Package {
   notes?: string;
   created_at: string;
   updated_at: string;
+  shipped_date?: string;
+  delivered_date?: string;
 }

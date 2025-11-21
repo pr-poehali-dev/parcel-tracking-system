@@ -82,8 +82,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             cur.execute(
                 """INSERT INTO packages 
                 (tracking_code, sender_name, sender_address, recipient_name, recipient_address, 
-                origin, destination, weight, status, estimated_delivery, notes)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                origin, destination, weight, status, estimated_delivery, notes, shipped_date, delivered_date)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING *""",
                 (
                     tracking_code,
@@ -96,7 +96,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     data.get('weight', 0),
                     data.get('status', 'pending'),
                     data.get('estimated_delivery'),
-                    data.get('notes', '')
+                    data.get('notes', ''),
+                    data.get('shipped_date'),
+                    data.get('delivered_date')
                 )
             )
             conn.commit()
@@ -125,6 +127,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     status = %s,
                     estimated_delivery = %s,
                     notes = %s,
+                    shipped_date = %s,
+                    delivered_date = %s,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
                 RETURNING *""",
@@ -139,6 +143,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     data.get('status'),
                     data.get('estimated_delivery'),
                     data.get('notes', ''),
+                    data.get('shipped_date'),
+                    data.get('delivered_date'),
                     package_id
                 )
             )

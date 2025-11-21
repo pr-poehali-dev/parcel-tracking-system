@@ -12,7 +12,7 @@ import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Package } from '@/types/package';
-import { getCountryCode, getCountryFlagEmoji } from '@/utils/countries';
+import { CountryFlag } from '@/components/ui/country-flag';
 
 const API_URL = 'https://functions.poehali.dev/377be8f8-6ae5-4538-9bd0-310ecc0aeec8';
 
@@ -279,10 +279,10 @@ export default function Index() {
                           <TableCell>{pkg.recipient_name}</TableCell>
                           <TableCell className="text-sm">
                             <div className="flex items-center gap-2">
-                              <span className="text-lg">{getCountryFlagEmoji(getCountryCode(pkg.origin))}</span>
+                              <CountryFlag countryName={pkg.origin} />
                               <span>{pkg.origin}</span>
                               <Icon name="ArrowRight" size={14} />
-                              <span className="text-lg">{getCountryFlagEmoji(getCountryCode(pkg.destination))}</span>
+                              <CountryFlag countryName={pkg.destination} />
                               <span>{pkg.destination}</span>
                             </div>
                           </TableCell>
@@ -443,7 +443,7 @@ function PackageForm({
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Weight (kg)</Label>
           <Input
@@ -471,13 +471,23 @@ function PackageForm({
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Estimated Delivery</Label>
+          <Label>Shipped Date</Label>
           <Input
-            type="date"
-            value={formData.estimated_delivery?.split('T')[0] || ''}
-            onChange={(e) => setFormData({ ...formData, estimated_delivery: e.target.value })}
-            required
+            type="datetime-local"
+            value={formData.shipped_date?.slice(0, 16) || ''}
+            onChange={(e) => setFormData({ ...formData, shipped_date: e.target.value })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Delivered Date</Label>
+          <Input
+            type="datetime-local"
+            value={formData.delivered_date?.slice(0, 16) || ''}
+            onChange={(e) => setFormData({ ...formData, delivered_date: e.target.value })}
           />
         </div>
       </div>

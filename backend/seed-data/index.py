@@ -42,32 +42,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur = conn.cursor()
     
     try:
-        delivery_date = datetime.now() - timedelta(days=3)
-        estimated_delivery = delivery_date.strftime('%Y-%m-%d')
+        shipped_date = datetime(2025, 11, 18, 10, 0, 0)
+        delivered_date = datetime(2025, 11, 22, 15, 30, 0)
+        estimated_delivery = '2025-11-22'
         
-        cur.execute(
-            """INSERT INTO packages 
-            (tracking_code, sender_name, sender_address, recipient_name, recipient_address, 
-            origin, destination, weight, status, estimated_delivery, notes, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING *""",
-            (
-                'AB2024789456',
-                'Myroslav Panets',
-                'China, Guangzhou',
-                'Jonas Weber',
-                'Alte Straße 2, 94551 Lalling, Germany',
-                'China',
-                'Germany',
-                2.3,
-                'delivered',
-                estimated_delivery,
-                'MULTISTICK ALL-IN-ONE - Quantity: 1',
-                delivery_date,
-                datetime.now()
-            )
-        )
+        cur.execute("UPDATE packages SET shipped_date = %s, delivered_date = %s WHERE tracking_code = 'AB2024789456'", (shipped_date, delivered_date))
         conn.commit()
+        
+        cur.execute("SELECT * FROM packages WHERE tracking_code = 'AB2024789456'")
         package = cur.fetchone()
         
         return {
