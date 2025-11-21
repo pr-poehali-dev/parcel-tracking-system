@@ -23,52 +23,34 @@ const getDefaultDeliveryDate = () => {
 };
 
 export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, generateTrackingCode }: PackageDialogProps) {
-  const [formData, setFormData] = useState<Partial<Package>>({
-    tracking_code: '',
-    sender_name: '',
-    sender_address: '',
-    recipient_name: '',
-    recipient_address: '',
-    weight: 0,
-    status: 'pending',
-    origin: '',
-    destination: '',
-    estimated_delivery: '',
-    notes: '',
-  });
-  
-  const editingPackageRef = useRef<Package | null>(null);
-  const generateCodeRef = useRef(generateTrackingCode);
-  
-  generateCodeRef.current = generateTrackingCode;
+  const getInitialFormData = () => {
+    if (editingPackage) {
+      return editingPackage;
+    }
+    return {
+      tracking_code: generateTrackingCode(),
+      sender_name: '',
+      sender_address: '',
+      recipient_name: '',
+      recipient_address: '',
+      weight: 0,
+      status: 'pending',
+      origin: '',
+      destination: '',
+      estimated_delivery: getDefaultDeliveryDate(),
+      notes: '',
+    };
+  };
+
+  const [formData, setFormData] = useState<Partial<Package>>(getInitialFormData());
+  const prevIsOpen = useRef(isOpen);
 
   useEffect(() => {
-    if (isOpen && editingPackageRef.current !== editingPackage) {
-      editingPackageRef.current = editingPackage;
-      
-      if (editingPackage) {
-        setFormData(editingPackage);
-      } else {
-        setFormData({
-          tracking_code: generateCodeRef.current(),
-          sender_name: '',
-          sender_address: '',
-          recipient_name: '',
-          recipient_address: '',
-          weight: 0,
-          status: 'pending',
-          origin: '',
-          destination: '',
-          estimated_delivery: getDefaultDeliveryDate(),
-          notes: '',
-        });
-      }
+    if (isOpen && !prevIsOpen.current) {
+      setFormData(getInitialFormData());
     }
-    
-    if (!isOpen) {
-      editingPackageRef.current = null;
-    }
-  }, [isOpen, editingPackage]);
+    prevIsOpen.current = isOpen;
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
