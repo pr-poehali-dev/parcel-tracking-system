@@ -67,7 +67,7 @@ export function PackageManagement({ packages, isLoading, onCreateNew, onEdit, on
                     <TableRow key={pkg.id}>
                       <TableCell className="font-mono font-medium">
                         <button
-                          onClick={() => navigate(`/track/${pkg.tracking_code}`)}
+                          onClick={() => navigate(`/admin/track/${pkg.tracking_code}`)}
                           className="hover:text-primary hover:underline"
                         >
                           {pkg.tracking_code}
