@@ -12,6 +12,7 @@ import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Package } from '@/types/package';
+import { getCountryCode, getCountryFlagEmoji } from '@/utils/countries';
 
 const API_URL = 'https://functions.poehali.dev/377be8f8-6ae5-4538-9bd0-310ecc0aeec8';
 
@@ -33,6 +34,13 @@ export default function Index() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { toast } = useToast();
+
+  const generateTrackingCode = () => {
+    const prefix = 'AB';
+    const year = new Date().getFullYear();
+    const random = Math.floor(Math.random() * 900000) + 100000;
+    return `${prefix}${year}${random}`;
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,7 +217,11 @@ export default function Index() {
               <h2 className="text-3xl font-bold">Package Management</h2>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="gap-2" onClick={() => setEditingPackage(null)}>
+                  <Button className="gap-2" onClick={() => {
+                    setEditingPackage(null);
+                    const newCode = generateTrackingCode();
+                    setTrackingCode(newCode);
+                  }}>
                     <Icon name="Plus" size={18} />
                     New Package
                   </Button>
@@ -266,9 +278,11 @@ export default function Index() {
                           <TableCell className="font-mono font-semibold">{pkg.tracking_code}</TableCell>
                           <TableCell>{pkg.recipient_name}</TableCell>
                           <TableCell className="text-sm">
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{getCountryFlagEmoji(getCountryCode(pkg.origin))}</span>
                               <span>{pkg.origin}</span>
                               <Icon name="ArrowRight" size={14} />
+                              <span className="text-lg">{getCountryFlagEmoji(getCountryCode(pkg.destination))}</span>
                               <span>{pkg.destination}</span>
                             </div>
                           </TableCell>
@@ -342,8 +356,36 @@ function PackageForm({
     onSubmit(formData);
   };
 
+  const generateTrackingCode = () => {
+    const prefix = 'AB';
+    const year = new Date().getFullYear();
+    const random = Math.floor(Math.random() * 900000) + 100000;
+    return `${prefix}${year}${random}`;
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Tracking Code</Label>
+        <div className="flex gap-2">
+          <Input
+            value={formData.tracking_code || ''}
+            onChange={(e) => setFormData({ ...formData, tracking_code: e.target.value })}
+            placeholder="AB2024XXXXXX"
+            required
+          />
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="icon"
+            onClick={() => setFormData({ ...formData, tracking_code: generateTrackingCode() })}
+            title="Generate new tracking code"
+          >
+            <Icon name="RefreshCw" size={18} />
+          </Button>
+        </div>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Sender Name</Label>

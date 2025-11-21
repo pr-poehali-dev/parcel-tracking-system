@@ -77,7 +77,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         elif method == 'POST':
             data = json.loads(event.get('body', '{}'))
-            tracking_code = generate_tracking_code()
+            tracking_code = data.get('tracking_code') or generate_tracking_code()
             
             cur.execute(
                 """INSERT INTO packages 

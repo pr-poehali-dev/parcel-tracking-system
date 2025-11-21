@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Package } from '@/types/package';
+import { getCountryCode, getCountryFlagEmoji } from '@/utils/countries';
 
 const statusConfig = {
   pending: { label: 'Pending', variant: 'secondary' as const, icon: 'Package' },
@@ -119,7 +120,10 @@ export default function Track() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Origin</p>
-                    <p className="font-medium">{packageData.origin}</p>
+                    <p className="font-medium flex items-center gap-2">
+                      <span className="text-2xl">{getCountryFlagEmoji(getCountryCode(packageData.origin))}</span>
+                      {packageData.origin}
+                    </p>
                   </div>
                 </div>
 
@@ -131,7 +135,10 @@ export default function Track() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Destination</p>
-                    <p className="font-medium">{packageData.destination}</p>
+                    <p className="font-medium flex items-center gap-2">
+                      <span className="text-2xl">{getCountryFlagEmoji(getCountryCode(packageData.destination))}</span>
+                      {packageData.destination}
+                    </p>
                   </div>
                 </div>
               </div>
