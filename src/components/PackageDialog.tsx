@@ -23,7 +23,7 @@ const getDefaultDeliveryDate = () => {
 };
 
 export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, generateTrackingCode }: PackageDialogProps) {
-  const getInitialFormData = () => {
+  const [formData, setFormData] = useState<Partial<Package>>(() => {
     if (editingPackage) {
       return editingPackage;
     }
@@ -40,17 +40,7 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
       estimated_delivery: getDefaultDeliveryDate(),
       notes: '',
     };
-  };
-
-  const [formData, setFormData] = useState<Partial<Package>>(getInitialFormData());
-  const prevIsOpen = useRef(isOpen);
-
-  useEffect(() => {
-    if (isOpen && !prevIsOpen.current) {
-      setFormData(getInitialFormData());
-    }
-    prevIsOpen.current = isOpen;
-  }, [isOpen]);
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

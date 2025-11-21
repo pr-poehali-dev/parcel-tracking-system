@@ -160,6 +160,7 @@ export default function Index() {
       </main>
 
       <PackageDialog
+        key={editingPackage?.id || 'new'}
         isOpen={isDialogOpen}
         onClose={() => {
           setIsDialogOpen(false);
