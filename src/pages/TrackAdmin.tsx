@@ -173,6 +173,17 @@ export default function TrackAdmin() {
 
   return (
     <div className="min-h-screen bg-background">
+      <header className="border-b backdrop-blur-sm sticky top-0 z-50 bg-card/50">
+        <div className="container mx-auto px-4 py-4">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Icon name="Package" size={32} className="text-primary" />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Aboba Express</h1>
+              <p className="text-sm text-muted-foreground">Admin Panel</p>
+            </div>
+          </Link>
+        </div>
+      </header>
       <div className="container mx-auto px-4 py-8">
         <Link to="/admin">
           <Button variant="ghost" className="mb-6">

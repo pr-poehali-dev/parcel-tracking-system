@@ -21,7 +21,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Headquarters: Guangzhou, China</li>
               <li>Email: support@abobaexpress.com</li>
-              <li>Phone: +86 20 1234 5678</li>
+              <li>Phone: +8618724278363</li>
             </ul>
           </div>
 

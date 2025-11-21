@@ -28,12 +28,6 @@ export default function Track() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [trackingHistory, setTrackingHistory] = useState<TrackingHistory[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const authStatus = localStorage.getItem('admin_authenticated');
-    setIsAdmin(authStatus === 'true');
-  }, []);
 
   useEffect(() => {
     const fetchPackage = async () => {

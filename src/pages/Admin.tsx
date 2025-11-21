@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
@@ -137,13 +137,13 @@ export default function Admin() {
       <header className="border-b backdrop-blur-sm sticky top-0 z-50 bg-card/50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <Icon name="Package" size={32} className="text-primary" />
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Aboba Express</h1>
                 <p className="text-sm text-muted-foreground">Admin Panel</p>
               </div>
-            </div>
+            </Link>
             {isAuthenticated && (
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => navigate('/')}>
