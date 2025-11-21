@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Package } from '@/types/package';
 import { CountryFlag } from '@/components/ui/country-flag';
+import { TrackingMap } from '@/components/TrackingMap';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -262,6 +263,23 @@ export default function Track() {
           </Card>
 
           <Card className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="Map" size={20} />
+                Route Map
+              </CardTitle>
+              <CardDescription>Visual tracking of package journey</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TrackingMap 
+                history={trackingHistory} 
+                origin={packageData.origin} 
+                destination={packageData.destination} 
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
