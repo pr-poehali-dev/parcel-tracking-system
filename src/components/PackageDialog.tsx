@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -36,15 +36,21 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
     estimated_delivery: '',
     notes: '',
   });
-  const [initialized, setInitialized] = useState(false);
+  
+  const editingPackageRef = useRef<Package | null>(null);
+  const generateCodeRef = useRef(generateTrackingCode);
+  
+  generateCodeRef.current = generateTrackingCode;
 
   useEffect(() => {
-    if (isOpen && !initialized) {
+    if (isOpen && editingPackageRef.current !== editingPackage) {
+      editingPackageRef.current = editingPackage;
+      
       if (editingPackage) {
         setFormData(editingPackage);
       } else {
         setFormData({
-          tracking_code: generateTrackingCode(),
+          tracking_code: generateCodeRef.current(),
           sender_name: '',
           sender_address: '',
           recipient_name: '',
@@ -57,13 +63,12 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
           notes: '',
         });
       }
-      setInitialized(true);
     }
     
     if (!isOpen) {
-      setInitialized(false);
+      editingPackageRef.current = null;
     }
-  }, [isOpen]);
+  }, [isOpen, editingPackage]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
