@@ -36,9 +36,10 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
     estimated_delivery: '',
     notes: '',
   });
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !initialized) {
       if (editingPackage) {
         setFormData(editingPackage);
       } else {
@@ -56,8 +57,13 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
           notes: '',
         });
       }
+      setInitialized(true);
     }
-  }, [isOpen, editingPackage]);
+    
+    if (!isOpen) {
+      setInitialized(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
