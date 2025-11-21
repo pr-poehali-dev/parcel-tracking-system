@@ -29,7 +29,6 @@ export default function Track() {
   const [error, setError] = useState('');
   const [trackingHistory, setTrackingHistory] = useState<TrackingHistory[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     const authStatus = localStorage.getItem('admin_authenticated');
@@ -251,4 +250,3 @@ export default function Track() {
     </div>
   );
 }
-
