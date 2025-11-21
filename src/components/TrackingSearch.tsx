@@ -21,10 +21,10 @@ export function TrackingSearch() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
-      <div className="text-center space-y-4">
-        <h2 className="text-4xl font-bold text-foreground">Track Your Package</h2>
-        <p className="text-lg text-muted-foreground">Enter your tracking code to get real-time delivery updates</p>
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold text-foreground">Track Your Package</h2>
+        <p className="text-base text-muted-foreground">Enter your tracking code to get real-time delivery updates</p>
       </div>
 
       <Card className="shadow-lg border-border/50">
@@ -53,7 +53,7 @@ export function TrackingSearch() {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-3 gap-3">
         <Card className="border-border/50">
           <CardHeader className="pb-3">
             <Icon name="Clock" size={24} className="text-primary mb-2" />

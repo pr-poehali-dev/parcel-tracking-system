@@ -3,9 +3,9 @@ import Icon from '@/components/ui/icon';
 
 export function Footer() {
   return (
-    <footer className="border-t bg-card/50 mt-auto">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-3 gap-8">
+    <footer className="border-t bg-card/50 mt-4">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid md:grid-cols-3 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Icon name="Package" size={24} className="text-primary" />
@@ -42,7 +42,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
+        <div className="mt-6 pt-4 border-t text-center text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Aboba Express. All rights reserved.</p>
         </div>
       </div>
