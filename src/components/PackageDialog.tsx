@@ -170,6 +170,27 @@ export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, gener
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="shipped_date">Shipment Date</Label>
+              <Input
+                id="shipped_date"
+                type="date"
+                value={formData.shipped_date ? formData.shipped_date.split('T')[0] : ''}
+                onChange={(e) => setFormData({ ...formData, shipped_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="delivered_date">Delivery Date</Label>
+              <Input
+                id="delivered_date"
+                type="date"
+                value={formData.delivered_date ? formData.delivered_date.split('T')[0] : ''}
+                onChange={(e) => setFormData({ ...formData, delivered_date: e.target.value })}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea
