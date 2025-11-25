@@ -35,7 +35,7 @@ export default function Admin() {
   }, []);
 
   const generateTrackingCode = () => {
-    const prefix = 'AB';
+    const prefix = 'ZV';
     const year = new Date().getFullYear();
     const random = Math.floor(Math.random() * 900000) + 100000;
     return `${prefix}${year}${random}`;
