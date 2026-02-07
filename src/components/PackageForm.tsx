@@ -27,28 +27,82 @@ interface PackageFormProps {
   editingPackage?: PackageFormData | null;
 }
 
-const countries = [
-  { code: 'US', name: 'United States', flag: '🇺🇸' },
-  { code: 'CN', name: 'China', flag: '🇨🇳' },
-  { code: 'RU', name: 'Russia', flag: '🇷🇺' },
-  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'DE', name: 'Germany', flag: '🇩🇪' },
-  { code: 'FR', name: 'France', flag: '🇫🇷' },
-  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
-  { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
-  { code: 'CA', name: 'Canada', flag: '🇨🇦' },
-  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
-  { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
-  { code: 'IN', name: 'India', flag: '🇮🇳' },
-  { code: 'MX', name: 'Mexico', flag: '🇲🇽' },
-  { code: 'ES', name: 'Spain', flag: '🇪🇸' },
-  { code: 'IT', name: 'Italy', flag: '🇮🇹' },
-];
+const countryFlags: Record<string, string> = {
+  'United States': '🇺🇸',
+  'China': '🇨🇳',
+  'Russia': '🇷🇺',
+  'United Kingdom': '🇬🇧',
+  'Germany': '🇩🇪',
+  'France': '🇫🇷',
+  'Japan': '🇯🇵',
+  'South Korea': '🇰🇷',
+  'Canada': '🇨🇦',
+  'Australia': '🇦🇺',
+  'Brazil': '🇧🇷',
+  'India': '🇮🇳',
+  'Mexico': '🇲🇽',
+  'Spain': '🇪🇸',
+  'Italy': '🇮🇹',
+  'Netherlands': '🇳🇱',
+  'Belgium': '🇧🇪',
+  'Switzerland': '🇨🇭',
+  'Sweden': '🇸🇪',
+  'Norway': '🇳🇴',
+  'Denmark': '🇩🇰',
+  'Finland': '🇫🇮',
+  'Poland': '🇵🇱',
+  'Portugal': '🇵🇹',
+  'Greece': '🇬🇷',
+  'Turkey': '🇹🇷',
+  'UAE': '🇦🇪',
+  'Saudi Arabia': '🇸🇦',
+  'Singapore': '🇸🇬',
+  'Malaysia': '🇲🇾',
+  'Thailand': '🇹🇭',
+  'Vietnam': '🇻🇳',
+  'Indonesia': '🇮🇩',
+  'Philippines': '🇵🇭',
+  'Hong Kong': '🇭🇰',
+  'Taiwan': '🇹🇼',
+  'New Zealand': '🇳🇿',
+  'Argentina': '🇦🇷',
+  'Chile': '🇨🇱',
+  'Colombia': '🇨🇴',
+  'Peru': '🇵🇪',
+  'South Africa': '🇿🇦',
+  'Egypt': '🇪🇬',
+  'Nigeria': '🇳🇬',
+  'Kenya': '🇰🇪',
+  'Morocco': '🇲🇦',
+  'Israel': '🇮🇱',
+  'Pakistan': '🇵🇰',
+  'Bangladesh': '🇧🇩',
+  'Sri Lanka': '🇱🇰',
+  'Kazakhstan': '🇰🇿',
+  'Ukraine': '🇺🇦',
+  'Belarus': '🇧🇾',
+  'Czech Republic': '🇨🇿',
+  'Austria': '🇦🇹',
+  'Hungary': '🇭🇺',
+  'Romania': '🇷🇴',
+  'Bulgaria': '🇧🇬',
+  'Croatia': '🇭🇷',
+  'Serbia': '🇷🇸',
+  'Ireland': '🇮🇪',
+  'Iceland': '🇮🇸',
+  'Luxembourg': '🇱🇺',
+  'Malta': '🇲🇹',
+  'Cyprus': '🇨🇾',
+};
 
 const generateTrackingCode = () => {
   const year = new Date().getFullYear();
   const random = Math.floor(Math.random() * 900000) + 100000;
   return `ZV${year}${random}`;
+};
+
+const getCountryFlag = (countryName: string) => {
+  return countryFlags[countryName] || '🌍';
 };
 
 export function PackageForm({ open, onClose, onSubmit, editingPackage }: PackageFormProps) {
@@ -87,11 +141,6 @@ export function PackageForm({ open, onClose, onSubmit, editingPackage }: Package
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
-  };
-
-  const getCountryFlag = (countryName: string) => {
-    const country = countries.find(c => c.name === countryName);
-    return country?.flag || '🌍';
   };
 
   return (
@@ -146,37 +195,25 @@ export function PackageForm({ open, onClose, onSubmit, editingPackage }: Package
                   value={formData.sender_name}
                   onChange={(e) => setFormData({ ...formData, sender_name: e.target.value })}
                   className="bg-[#0f1729] border-[#1e2a47] text-white"
+                  placeholder="John Doe"
                   required
                 />
               </div>
               
               <div className="space-y-2">
                 <Label className="text-white">Sender Country</Label>
-                <Select 
-                  value={formData.sender_country} 
-                  onValueChange={(value) => setFormData({ ...formData, sender_country: value })}
-                >
-                  <SelectTrigger className="bg-[#0f1729] border-[#1e2a47] text-white">
-                    <SelectValue placeholder="Select country">
-                      {formData.sender_country && (
-                        <span className="flex items-center gap-2">
-                          <span>{getCountryFlag(formData.sender_country)}</span>
-                          <span>{formData.sender_country}</span>
-                        </span>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a2332] border-[#1e2a47]">
-                    {countries.map((country) => (
-                      <SelectItem key={country.code} value={country.name}>
-                        <span className="flex items-center gap-2">
-                          <span>{country.flag}</span>
-                          <span>{country.name}</span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  <Input
+                    value={formData.sender_country}
+                    onChange={(e) => setFormData({ ...formData, sender_country: e.target.value })}
+                    className="bg-[#0f1729] border-[#1e2a47] text-white pl-12"
+                    placeholder="China"
+                    required
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl">
+                    {getCountryFlag(formData.sender_country)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -186,6 +223,7 @@ export function PackageForm({ open, onClose, onSubmit, editingPackage }: Package
                 value={formData.sender_address}
                 onChange={(e) => setFormData({ ...formData, sender_address: e.target.value })}
                 className="bg-[#0f1729] border-[#1e2a47] text-white"
+                placeholder="123 Main Street, Beijing"
                 required
               />
             </div>
@@ -205,37 +243,25 @@ export function PackageForm({ open, onClose, onSubmit, editingPackage }: Package
                   value={formData.recipient_name}
                   onChange={(e) => setFormData({ ...formData, recipient_name: e.target.value })}
                   className="bg-[#0f1729] border-[#1e2a47] text-white"
+                  placeholder="Jane Smith"
                   required
                 />
               </div>
               
               <div className="space-y-2">
                 <Label className="text-white">Recipient Country</Label>
-                <Select 
-                  value={formData.recipient_country} 
-                  onValueChange={(value) => setFormData({ ...formData, recipient_country: value })}
-                >
-                  <SelectTrigger className="bg-[#0f1729] border-[#1e2a47] text-white">
-                    <SelectValue placeholder="Select country">
-                      {formData.recipient_country && (
-                        <span className="flex items-center gap-2">
-                          <span>{getCountryFlag(formData.recipient_country)}</span>
-                          <span>{formData.recipient_country}</span>
-                        </span>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a2332] border-[#1e2a47]">
-                    {countries.map((country) => (
-                      <SelectItem key={country.code} value={country.name}>
-                        <span className="flex items-center gap-2">
-                          <span>{country.flag}</span>
-                          <span>{country.name}</span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  <Input
+                    value={formData.recipient_country}
+                    onChange={(e) => setFormData({ ...formData, recipient_country: e.target.value })}
+                    className="bg-[#0f1729] border-[#1e2a47] text-white pl-12"
+                    placeholder="United States"
+                    required
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl">
+                    {getCountryFlag(formData.recipient_country)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -245,6 +271,7 @@ export function PackageForm({ open, onClose, onSubmit, editingPackage }: Package
                 value={formData.recipient_address}
                 onChange={(e) => setFormData({ ...formData, recipient_address: e.target.value })}
                 className="bg-[#0f1729] border-[#1e2a47] text-white"
+                placeholder="456 Oak Avenue, New York"
                 required
               />
             </div>

@@ -11,7 +11,6 @@ import Admin from "./pages/Admin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
-import { Footer } from "./components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +31,6 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <Footer />
         </div>
       </BrowserRouter>
     </TooltipProvider>
