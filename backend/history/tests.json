@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Get tracking history",
+      "name": "Get history",
       "method": "GET",
       "path": "/?package_id=1",
       "expectedStatus": 200

@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Get all packages",
+      "name": "Get packages",
       "method": "GET",
       "path": "/",
       "expectedStatus": 200
