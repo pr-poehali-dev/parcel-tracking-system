@@ -12,16 +12,12 @@ def generate_tracking_code() -> str:
     return f"AB{year}{number}"
 
 def get_db_connection():
-    """Establish database connection"""
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn, cursor_factory=RealDictCursor)
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Управление посылками - создание, чтение, обновление, удаление
-    Args: event with httpMethod, body, queryStringParameters
-          context with request_id attribute
-    Returns: HTTP response with package data in English
     '''
     method: str = event.get('httpMethod', 'GET')
     

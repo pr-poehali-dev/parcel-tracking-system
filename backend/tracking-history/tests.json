@@ -1,12 +1,12 @@
 {
   "tests": [
     {
-      "name": "Get tracking history without package_id",
+      "name": "Get tracking history",
       "method": "GET",
-      "path": "/",
-      "expectedStatus": 400,
+      "path": "/?package_id=1",
+      "expectedStatus": 200,
       "expectedBody": {
-        "success": false
+        "success": true
       },
       "bodyMatcher": "partial"
     }

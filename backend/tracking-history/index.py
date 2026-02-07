@@ -5,16 +5,12 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 def get_db_connection():
-    """Establish database connection"""
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn, cursor_factory=RealDictCursor)
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Управление историей отслеживания посылок
-    Args: event with httpMethod, body, queryStringParameters
-          context with request_id attribute
-    Returns: HTTP response with tracking history data
     '''
     method: str = event.get('httpMethod', 'GET')
     

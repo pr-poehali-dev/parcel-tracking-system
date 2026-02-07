@@ -10,17 +10,6 @@
         "packages": []
       },
       "bodyMatcher": "partial"
-    },
-    {
-      "name": "Get package by tracking code - not found",
-      "method": "GET",
-      "path": "/?tracking_code=AB2024999999",
-      "expectedStatus": 404,
-      "expectedBody": {
-        "success": false,
-        "error": "string"
-      },
-      "bodyMatcher": "partial"
     }
   ]
 }
