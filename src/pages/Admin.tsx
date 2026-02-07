@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { PackageForm } from '@/components/PackageForm';
+import { TrackingHistoryManager } from '@/components/TrackingHistoryManager';
 
 // Временно хардкодим URL, позже обновим из func2url.json
 const PACKAGES_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
+const TRACKING_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
 
 interface Package {
   id: number;
@@ -28,6 +31,9 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [packages, setPackages] = useState<Package[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<Package | null>(null);
+  const [showTrackingHistory, setShowTrackingHistory] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -66,6 +72,72 @@ export default function Admin() {
     } catch (error) {
       console.error('Error loading packages:', error);
     }
+  };
+
+  const handleCreatePackage = async (formData: Partial<Package>) => {
+    try {
+      const response = await fetch(PACKAGES_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({ title: 'Package created successfully' });
+        setShowCreateForm(false);
+        loadPackages();
+      } else {
+        toast({ title: 'Failed to create package', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to create package', variant: 'destructive' });
+    }
+  };
+
+  const handleUpdatePackage = async (formData: Partial<Package>) => {
+    try {
+      const response = await fetch(PACKAGES_API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({ title: 'Package updated successfully' });
+        setShowCreateForm(false);
+        setEditingPackage(null);
+        loadPackages();
+      } else {
+        toast({ title: 'Failed to update package', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Failed to update package', variant: 'destructive' });
+    }
+  };
+
+  const handleDeletePackage = async (id: number) => {
+    if (!confirm('Delete this package?')) return;
+
+    try {
+      const response = await fetch(`${PACKAGES_API}?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({ title: 'Package deleted successfully' });
+        loadPackages();
+      }
+    } catch (error) {
+      toast({ title: 'Failed to delete package', variant: 'destructive' });
+    }
+  };
+
+  const openTrackingHistory = (pkg: Package) => {
+    setSelectedPackage(pkg);
+    setShowTrackingHistory(true);
   };
 
   if (!isAuthenticated) {
@@ -126,7 +198,13 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Package Management</h2>
-          <Button onClick={() => setShowCreateForm(true)} className="bg-[#3b82f6] hover:bg-[#2563eb]">
+          <Button 
+            onClick={() => {
+              setEditingPackage(null);
+              setShowCreateForm(true);
+            }} 
+            className="bg-[#3b82f6] hover:bg-[#2563eb]"
+          >
             <Icon name="Plus" size={18} className="mr-2" />
             Create Package
           </Button>
@@ -158,9 +236,35 @@ export default function Admin() {
                     </div>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="border-[#1e2a47] text-white">
-                  <Icon name="Edit" size={16} />
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => {
+                      setEditingPackage(pkg);
+                      setShowCreateForm(true);
+                    }}
+                    className="border-[#1e2a47] text-white hover:bg-[#1e2a47]"
+                  >
+                    <Icon name="Edit" size={16} />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => openTrackingHistory(pkg)}
+                    className="border-[#1e2a47] text-white hover:bg-[#1e2a47]"
+                  >
+                    <Icon name="Clock" size={16} />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => handleDeletePackage(pkg.id)}
+                    className="border-red-500 text-red-400 hover:bg-red-500/10"
+                  >
+                    <Icon name="Trash2" size={16} />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
@@ -173,6 +277,29 @@ export default function Admin() {
           </div>
         )}
       </main>
+
+      <PackageForm
+        open={showCreateForm}
+        onClose={() => {
+          setShowCreateForm(false);
+          setEditingPackage(null);
+        }}
+        onSubmit={editingPackage ? handleUpdatePackage : handleCreatePackage}
+        editingPackage={editingPackage}
+      />
+
+      {selectedPackage && (
+        <TrackingHistoryManager
+          open={showTrackingHistory}
+          onClose={() => {
+            setShowTrackingHistory(false);
+            setSelectedPackage(null);
+          }}
+          packageId={selectedPackage.id}
+          trackingCode={selectedPackage.tracking_code}
+          apiUrl={TRACKING_API}
+        />
+      )}
     </div>
   );
 }
