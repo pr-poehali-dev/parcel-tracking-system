@@ -10,7 +10,7 @@ def get_db_connection():
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Manage package tracking history - create, read, update, delete tracking events
+    Управление историей отслеживания посылок
     Args: event with httpMethod, body, queryStringParameters
           context with request_id attribute
     Returns: HTTP response with tracking history data
@@ -45,7 +45,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cur.execute(
-                "SELECT * FROM tracking_history WHERE package_id = %s ORDER BY event_date DESC",
+                "SELECT * FROM t_p50689379_parcel_tracking_syst.tracking_history WHERE package_id = %s ORDER BY event_date DESC",
                 (package_id,)
             )
             history = cur.fetchall()
@@ -61,7 +61,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             data = json.loads(event.get('body', '{}'))
             
             cur.execute(
-                """INSERT INTO tracking_history 
+                """INSERT INTO t_p50689379_parcel_tracking_syst.tracking_history 
                 (package_id, location, status, description, event_date)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING *""",
@@ -88,7 +88,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             history_id = data.get('id')
             
             cur.execute(
-                """UPDATE tracking_history 
+                """UPDATE t_p50689379_parcel_tracking_syst.tracking_history 
                 SET location = %s,
                     status = %s,
                     description = %s,
@@ -124,7 +124,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'DELETE':
             history_id = event.get('queryStringParameters', {}).get('id')
             
-            cur.execute("DELETE FROM tracking_history WHERE id = %s RETURNING id", (history_id,))
+            cur.execute("DELETE FROM t_p50689379_parcel_tracking_syst.tracking_history WHERE id = %s RETURNING id", (history_id,))
             conn.commit()
             deleted = cur.fetchone()
             

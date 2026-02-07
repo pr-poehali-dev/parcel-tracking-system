@@ -17,7 +17,7 @@ def get_db_connection():
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Manage packages - create, read, update, delete package tracking records
+    Управление посылками - создание, чтение, обновление, удаление
     Args: event with httpMethod, body, queryStringParameters
           context with request_id attribute
     Returns: HTTP response with package data in English
