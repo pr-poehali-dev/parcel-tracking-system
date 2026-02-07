@@ -12,6 +12,7 @@ def generate_tracking_code() -> str:
     return f"AB{year}{number}"
 
 def get_db_connection():
+    """Establish database connection"""
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn, cursor_factory=RealDictCursor)
 

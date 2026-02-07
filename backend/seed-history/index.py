@@ -6,6 +6,7 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
 def get_db_connection():
+    """Establish database connection"""
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn, cursor_factory=RealDictCursor)
 
