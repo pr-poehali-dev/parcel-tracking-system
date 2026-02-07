@@ -131,9 +131,6 @@ export default function Index() {
             </div>
           </div>
 
-          <div className="border-t border-[#1e2a47] mt-8 pt-8 text-center text-sm text-gray-500">
-            © 2026 Aboba Express. All rights reserved.
-          </div>
         </div>
       </footer>
     </div>
