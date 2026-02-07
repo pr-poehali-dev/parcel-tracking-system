@@ -7,7 +7,7 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
 def generate_tracking_code() -> str:
-    """Генерация трек-кода формата ZV + год + 6 цифр"""
+    """Генерация трек-кода ZV + год + 6 цифр"""
     year = datetime.now().year
     number = str(random.randint(100000, 999999))
     return f"ZV{year}{number}"
@@ -18,9 +18,9 @@ def get_db_connection():
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Управление посылками - создание, чтение, обновление, удаление
+    API для управления посылками
     '''
-    method: str = event.get('httpMethod', 'GET')
+    method = event.get('httpMethod', 'GET')
     
     if method == 'OPTIONS':
         return {
@@ -28,8 +28,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
-                'Access-Control-Max-Age': '86400'
+                'Access-Control-Allow-Headers': 'Content-Type'
             },
             'body': ''
         }
