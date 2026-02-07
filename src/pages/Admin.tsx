@@ -44,12 +44,18 @@ export default function Admin() {
   const loadPackages = async () => {
     setIsLoading(true);
     try {
+      console.log('Loading packages from:', API_URL);
       const response = await fetch(API_URL);
       const data = await response.json();
+      console.log('Loaded packages:', data);
       if (data.success) {
         setPackages(data.packages || []);
+        toast({ title: `Loaded ${data.packages?.length || 0} packages` });
+      } else {
+        toast({ title: 'Failed to load packages', variant: 'destructive' });
       }
     } catch (error) {
+      console.error('Error loading packages:', error);
       toast({ title: 'Failed to load packages', variant: 'destructive' });
     } finally {
       setIsLoading(false);
@@ -58,37 +64,52 @@ export default function Admin() {
 
   const handleCreatePackage = async (formData: Partial<Package>) => {
     try {
+      console.log('Creating package:', formData);
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (response.ok && data.success) {
         toast({ title: 'Package created successfully' });
         setIsDialogOpen(false);
         loadPackages();
+      } else {
+        toast({ title: data.error || 'Failed to create package', variant: 'destructive' });
       }
     } catch (error) {
+      console.error('Error creating package:', error);
       toast({ title: 'Failed to create package', variant: 'destructive' });
     }
   };
 
   const handleUpdatePackage = async (formData: Package) => {
     try {
+      console.log('Updating package:', formData);
       const response = await fetch(API_URL, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+      console.log('Update response:', data);
+
+      if (response.ok && data.success) {
         toast({ title: 'Package updated successfully' });
         setIsDialogOpen(false);
         setEditingPackage(null);
         loadPackages();
+      } else {
+        toast({ title: data.error || 'Failed to update package', variant: 'destructive' });
       }
     } catch (error) {
+      console.error('Error updating package:', error);
       toast({ title: 'Failed to update package', variant: 'destructive' });
     }
   };

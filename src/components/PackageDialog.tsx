@@ -23,27 +23,45 @@ const getDefaultDeliveryDate = () => {
 };
 
 export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, generateTrackingCode }: PackageDialogProps) {
-  const [formData, setFormData] = useState<Partial<Package>>(() => {
-    if (editingPackage) {
-      return editingPackage;
-    }
-    return {
-      tracking_code: generateTrackingCode(),
-      sender_name: '',
-      sender_address: '',
-      recipient_name: '',
-      recipient_address: '',
-      weight: 0,
-      status: 'pending',
-      origin: '',
-      destination: '',
-      estimated_delivery: getDefaultDeliveryDate(),
-      notes: '',
-    };
+  const [formData, setFormData] = useState<Partial<Package>>({
+    tracking_code: '',
+    sender_name: '',
+    sender_address: '',
+    recipient_name: '',
+    recipient_address: '',
+    weight: 0,
+    status: 'pending',
+    origin: '',
+    destination: '',
+    estimated_delivery: getDefaultDeliveryDate(),
+    notes: '',
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      if (editingPackage) {
+        setFormData(editingPackage);
+      } else {
+        setFormData({
+          tracking_code: generateTrackingCode(),
+          sender_name: '',
+          sender_address: '',
+          recipient_name: '',
+          recipient_address: '',
+          weight: 0,
+          status: 'pending',
+          origin: '',
+          destination: '',
+          estimated_delivery: getDefaultDeliveryDate(),
+          notes: '',
+        });
+      }
+    }
+  }, [isOpen, editingPackage, generateTrackingCode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted:', formData);
     onSubmit(formData);
   };
 
