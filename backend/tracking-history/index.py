@@ -37,7 +37,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
                     'body': json.dumps({'success': False, 'error': 'package_id is required'})
                 }
             
@@ -50,7 +49,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True, 'history': [dict(h) for h in history]}, default=str)
             }
         
@@ -76,7 +74,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 201,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True, 'history': dict(new_history)}, default=str)
             }
         
@@ -107,14 +104,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
                     'body': json.dumps({'success': False, 'error': 'History entry not found'})
                 }
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True, 'history': dict(updated_history)}, default=str)
             }
         
@@ -129,21 +124,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
                     'body': json.dumps({'success': False, 'error': 'History entry not found'})
                 }
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True})
             }
         
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'isBase64Encoded': False,
             'body': json.dumps({'success': False, 'error': 'Method not allowed'})
         }
     

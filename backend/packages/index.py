@@ -1,15 +1,16 @@
 import json
 import os
 import random
-import string
 from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from datetime import datetime
 
 def generate_tracking_code() -> str:
-    year = "2024"
-    number = ''.join(random.choices(string.digits, k=6))
-    return f"AB{year}{number}"
+    """Генерация трек-кода формата ZV + год + 6 цифр"""
+    year = datetime.now().year
+    number = str(random.randint(100000, 999999))
+    return f"ZV{year}{number}"
 
 def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
@@ -51,14 +52,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 404,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'isBase64Encoded': False,
                         'body': json.dumps({'success': False, 'error': 'Package not found'})
                     }
                 
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
                     'body': json.dumps({'success': True, 'package': dict(package)}, default=str)
                 }
             else:
@@ -68,7 +67,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
                     'body': json.dumps({'success': True, 'packages': [dict(p) for p in packages]}, default=str)
                 }
         
@@ -104,7 +102,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 201,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True, 'package': dict(new_package)}, default=str)
             }
         
@@ -152,14 +149,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
                     'body': json.dumps({'success': False, 'error': 'Package not found'})
                 }
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True, 'package': dict(updated_package)}, default=str)
             }
         
@@ -174,21 +169,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
                     'body': json.dumps({'success': False, 'error': 'Package not found'})
                 }
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True})
             }
         
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'isBase64Encoded': False,
             'body': json.dumps({'success': False, 'error': 'Method not allowed'})
         }
     
