@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "name": "Get all packages",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
