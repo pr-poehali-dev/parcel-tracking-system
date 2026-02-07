@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import * as FlagIcons from 'country-flag-icons/react/3x2';
 
 const PACKAGES_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
 const TRACKING_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
@@ -29,25 +30,39 @@ interface TrackingEvent {
   event_date: string;
 }
 
-const getCountryFlag = (countryName: string) => {
-  const flags: Record<string, string> = {
-    'United States': '🇺🇸',
-    'China': '🇨🇳',
-    'Russia': '🇷🇺',
-    'United Kingdom': '🇬🇧',
-    'Germany': '🇩🇪',
-    'France': '🇫🇷',
-    'Japan': '🇯🇵',
-    'South Korea': '🇰🇷',
-    'Canada': '🇨🇦',
-    'Australia': '🇦🇺',
-    'Brazil': '🇧🇷',
-    'India': '🇮🇳',
-    'Mexico': '🇲🇽',
-    'Spain': '🇪🇸',
-    'Italy': '🇮🇹',
-  };
-  return flags[countryName] || '🌍';
+const countryToCode: Record<string, string> = {
+  'United States': 'US',
+  'China': 'CN',
+  'Russia': 'RU',
+  'United Kingdom': 'GB',
+  'Germany': 'DE',
+  'France': 'FR',
+  'Japan': 'JP',
+  'South Korea': 'KR',
+  'Canada': 'CA',
+  'Australia': 'AU',
+  'Brazil': 'BR',
+  'India': 'IN',
+  'Mexico': 'MX',
+  'Spain': 'ES',
+  'Italy': 'IT',
+  'Netherlands': 'NL',
+  'Belgium': 'BE',
+  'Switzerland': 'CH',
+  'Sweden': 'SE',
+  'Norway': 'NO',
+};
+
+const CountryFlag = ({ countryName }: { countryName: string }) => {
+  const countryCode = countryToCode[countryName];
+  if (!countryCode) {
+    return <span className="text-2xl">🌍</span>;
+  }
+  const FlagComponent = (FlagIcons as Record<string, React.ComponentType<{ className?: string }>>)[countryCode];
+  if (!FlagComponent) {
+    return <span className="text-2xl">🌍</span>;
+  }
+  return <FlagComponent className="w-8 h-6 rounded" />;
 };
 
 export default function Track() {
@@ -163,7 +178,7 @@ export default function Track() {
                     <p className="text-white font-semibold">{packageData.sender_name}</p>
                     <p className="text-gray-400 text-sm">{packageData.sender_address}</p>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-2xl">{getCountryFlag(packageData.sender_country)}</span>
+                      <CountryFlag countryName={packageData.sender_country} />
                       <span className="text-gray-400">{packageData.sender_country}</span>
                     </div>
                   </div>
@@ -179,7 +194,7 @@ export default function Track() {
                     <p className="text-white font-semibold">{packageData.recipient_name}</p>
                     <p className="text-gray-400 text-sm">{packageData.recipient_address}</p>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-2xl">{getCountryFlag(packageData.recipient_country)}</span>
+                      <CountryFlag countryName={packageData.recipient_country} />
                       <span className="text-gray-400">{packageData.recipient_country}</span>
                     </div>
                   </div>

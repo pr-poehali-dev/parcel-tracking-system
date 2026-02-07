@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
+import * as FlagIcons from 'country-flag-icons/react/3x2';
 
 interface PackageFormData {
   id?: number;
@@ -27,72 +28,72 @@ interface PackageFormProps {
   editingPackage?: PackageFormData | null;
 }
 
-const countryFlags: Record<string, string> = {
-  'United States': '🇺🇸',
-  'China': '🇨🇳',
-  'Russia': '🇷🇺',
-  'United Kingdom': '🇬🇧',
-  'Germany': '🇩🇪',
-  'France': '🇫🇷',
-  'Japan': '🇯🇵',
-  'South Korea': '🇰🇷',
-  'Canada': '🇨🇦',
-  'Australia': '🇦🇺',
-  'Brazil': '🇧🇷',
-  'India': '🇮🇳',
-  'Mexico': '🇲🇽',
-  'Spain': '🇪🇸',
-  'Italy': '🇮🇹',
-  'Netherlands': '🇳🇱',
-  'Belgium': '🇧🇪',
-  'Switzerland': '🇨🇭',
-  'Sweden': '🇸🇪',
-  'Norway': '🇳🇴',
-  'Denmark': '🇩🇰',
-  'Finland': '🇫🇮',
-  'Poland': '🇵🇱',
-  'Portugal': '🇵🇹',
-  'Greece': '🇬🇷',
-  'Turkey': '🇹🇷',
-  'UAE': '🇦🇪',
-  'Saudi Arabia': '🇸🇦',
-  'Singapore': '🇸🇬',
-  'Malaysia': '🇲🇾',
-  'Thailand': '🇹🇭',
-  'Vietnam': '🇻🇳',
-  'Indonesia': '🇮🇩',
-  'Philippines': '🇵🇭',
-  'Hong Kong': '🇭🇰',
-  'Taiwan': '🇹🇼',
-  'New Zealand': '🇳🇿',
-  'Argentina': '🇦🇷',
-  'Chile': '🇨🇱',
-  'Colombia': '🇨🇴',
-  'Peru': '🇵🇪',
-  'South Africa': '🇿🇦',
-  'Egypt': '🇪🇬',
-  'Nigeria': '🇳🇬',
-  'Kenya': '🇰🇪',
-  'Morocco': '🇲🇦',
-  'Israel': '🇮🇱',
-  'Pakistan': '🇵🇰',
-  'Bangladesh': '🇧🇩',
-  'Sri Lanka': '🇱🇰',
-  'Kazakhstan': '🇰🇿',
-  'Ukraine': '🇺🇦',
-  'Belarus': '🇧🇾',
-  'Czech Republic': '🇨🇿',
-  'Austria': '🇦🇹',
-  'Hungary': '🇭🇺',
-  'Romania': '🇷🇴',
-  'Bulgaria': '🇧🇬',
-  'Croatia': '🇭🇷',
-  'Serbia': '🇷🇸',
-  'Ireland': '🇮🇪',
-  'Iceland': '🇮🇸',
-  'Luxembourg': '🇱🇺',
-  'Malta': '🇲🇹',
-  'Cyprus': '🇨🇾',
+const countryToCode: Record<string, string> = {
+  'United States': 'US',
+  'China': 'CN',
+  'Russia': 'RU',
+  'United Kingdom': 'GB',
+  'Germany': 'DE',
+  'France': 'FR',
+  'Japan': 'JP',
+  'South Korea': 'KR',
+  'Canada': 'CA',
+  'Australia': 'AU',
+  'Brazil': 'BR',
+  'India': 'IN',
+  'Mexico': 'MX',
+  'Spain': 'ES',
+  'Italy': 'IT',
+  'Netherlands': 'NL',
+  'Belgium': 'BE',
+  'Switzerland': 'CH',
+  'Sweden': 'SE',
+  'Norway': 'NO',
+  'Denmark': 'DK',
+  'Finland': 'FI',
+  'Poland': 'PL',
+  'Portugal': 'PT',
+  'Greece': 'GR',
+  'Turkey': 'TR',
+  'UAE': 'AE',
+  'Saudi Arabia': 'SA',
+  'Singapore': 'SG',
+  'Malaysia': 'MY',
+  'Thailand': 'TH',
+  'Vietnam': 'VN',
+  'Indonesia': 'ID',
+  'Philippines': 'PH',
+  'Hong Kong': 'HK',
+  'Taiwan': 'TW',
+  'New Zealand': 'NZ',
+  'Argentina': 'AR',
+  'Chile': 'CL',
+  'Colombia': 'CO',
+  'Peru': 'PE',
+  'South Africa': 'ZA',
+  'Egypt': 'EG',
+  'Nigeria': 'NG',
+  'Kenya': 'KE',
+  'Morocco': 'MA',
+  'Israel': 'IL',
+  'Pakistan': 'PK',
+  'Bangladesh': 'BD',
+  'Sri Lanka': 'LK',
+  'Kazakhstan': 'KZ',
+  'Ukraine': 'UA',
+  'Belarus': 'BY',
+  'Czech Republic': 'CZ',
+  'Austria': 'AT',
+  'Hungary': 'HU',
+  'Romania': 'RO',
+  'Bulgaria': 'BG',
+  'Croatia': 'HR',
+  'Serbia': 'RS',
+  'Ireland': 'IE',
+  'Iceland': 'IS',
+  'Luxembourg': 'LU',
+  'Malta': 'MT',
+  'Cyprus': 'CY',
 };
 
 const generateTrackingCode = () => {
@@ -101,8 +102,16 @@ const generateTrackingCode = () => {
   return `ZV${year}${random}`;
 };
 
-const getCountryFlag = (countryName: string) => {
-  return countryFlags[countryName] || '🌍';
+const CountryFlag = ({ countryName }: { countryName: string }) => {
+  const countryCode = countryToCode[countryName];
+  if (!countryCode) {
+    return <span className="text-2xl">🌍</span>;
+  }
+  const FlagComponent = (FlagIcons as Record<string, React.ComponentType<{ className?: string }>>)[countryCode];
+  if (!FlagComponent) {
+    return <span className="text-2xl">🌍</span>;
+  }
+  return <FlagComponent className="w-8 h-6 rounded" />;
 };
 
 export function PackageForm({ open, onClose, onSubmit, editingPackage }: PackageFormProps) {
@@ -210,9 +219,9 @@ export function PackageForm({ open, onClose, onSubmit, editingPackage }: Package
                     placeholder="China"
                     required
                   />
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl">
-                    {getCountryFlag(formData.sender_country)}
-                  </span>
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <CountryFlag countryName={formData.sender_country} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -258,9 +267,9 @@ export function PackageForm({ open, onClose, onSubmit, editingPackage }: Package
                     placeholder="United States"
                     required
                   />
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl">
-                    {getCountryFlag(formData.recipient_country)}
-                  </span>
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <CountryFlag countryName={formData.recipient_country} />
+                  </div>
                 </div>
               </div>
             </div>
