@@ -75,6 +75,16 @@ export default function Admin() {
   };
 
   const handleCreatePackage = async (formData: Partial<Package>) => {
+    // Проверка что backend задеплоился
+    if (PACKAGES_API.includes('YOUR_URL_HERE')) {
+      toast({ 
+        title: 'Backend функции ещё не задеплоились', 
+        description: 'Подожди несколько минут и обнови страницу',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     try {
       const response = await fetch(PACKAGES_API, {
         method: 'POST',
