@@ -8,8 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PackageForm } from '@/components/PackageForm';
 import { TrackingHistoryManager } from '@/components/TrackingHistoryManager';
 
-const PACKAGES_API = 'https://functions.poehali.dev/6b965204-6ba8-46d8-9235-eefd81fce6ea';
-const TRACKING_API = 'https://functions.poehali.dev/be8f004b-9184-46b5-b9f9-2874df3a5fdd';
+const PACKAGES_API = 'https://functions.poehali.dev/1c205e38-f202-4c5a-a3b1-07344e13268f';
+const TRACKING_API = 'https://functions.poehali.dev/407d591f-86ae-4560-9454-4accddae7ff4';
 
 interface Package {
   id: number;

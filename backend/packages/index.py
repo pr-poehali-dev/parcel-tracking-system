@@ -6,6 +6,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
+SCHEMA = 't_p50689379_parcel_tracking_syst'
+
 def generate_tracking_code() -> str:
     """Генерация трек-кода ZV + год + 6 цифр"""
     year = datetime.now().year
@@ -42,7 +44,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if tracking_code:
                 cur.execute(
-                    "SELECT * FROM t_p50689379_parcel_tracking_syst.packages WHERE tracking_code = %s",
+                    f"SELECT * FROM {SCHEMA}.packages WHERE tracking_code = %s",
                     (tracking_code,)
                 )
                 package = cur.fetchone()
@@ -60,7 +62,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'success': True, 'package': dict(package)}, default=str)
                 }
             else:
-                cur.execute("SELECT * FROM t_p50689379_parcel_tracking_syst.packages ORDER BY created_at DESC")
+                cur.execute(f"SELECT * FROM {SCHEMA}.packages ORDER BY created_at DESC")
                 packages = cur.fetchall()
                 
                 return {
@@ -74,7 +76,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             tracking_code = data.get('tracking_code') or generate_tracking_code()
             
             cur.execute(
-                """INSERT INTO t_p50689379_parcel_tracking_syst.packages 
+                f"""INSERT INTO {SCHEMA}.packages 
                 (tracking_code, sender_name, sender_address, sender_country,
                 recipient_name, recipient_address, recipient_country, 
                 status, shipped_date, delivery_date)
@@ -107,7 +109,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             package_id = data.get('id')
             
             cur.execute(
-                """UPDATE t_p50689379_parcel_tracking_syst.packages 
+                f"""UPDATE {SCHEMA}.packages 
                 SET sender_name = %s,
                     sender_address = %s,
                     sender_country = %s,
@@ -152,7 +154,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'DELETE':
             package_id = event.get('queryStringParameters', {}).get('id')
             
-            cur.execute("DELETE FROM t_p50689379_parcel_tracking_syst.packages WHERE id = %s RETURNING id", (package_id,))
+            cur.execute(f"DELETE FROM {SCHEMA}.packages WHERE id = %s RETURNING id", (package_id,))
             conn.commit()
             deleted = cur.fetchone()
             

@@ -4,6 +4,8 @@ from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+SCHEMA = 't_p50689379_parcel_tracking_syst'
+
 def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn, cursor_factory=RealDictCursor)
@@ -40,7 +42,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             cur.execute(
-                "SELECT * FROM t_p50689379_parcel_tracking_syst.tracking_history WHERE package_id = %s ORDER BY event_date DESC",
+                f"SELECT * FROM {SCHEMA}.tracking_history WHERE package_id = %s ORDER BY event_date DESC",
                 (package_id,)
             )
             history = cur.fetchall()
@@ -55,7 +57,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             data = json.loads(event.get('body', '{}'))
             
             cur.execute(
-                """INSERT INTO t_p50689379_parcel_tracking_syst.tracking_history 
+                f"""INSERT INTO {SCHEMA}.tracking_history 
                 (package_id, location, status, description, event_date)
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING *""",
@@ -81,7 +83,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             history_id = data.get('id')
             
             cur.execute(
-                """UPDATE t_p50689379_parcel_tracking_syst.tracking_history 
+                f"""UPDATE {SCHEMA}.tracking_history 
                 SET location = %s,
                     status = %s,
                     description = %s,
@@ -115,7 +117,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'DELETE':
             history_id = event.get('queryStringParameters', {}).get('id')
             
-            cur.execute("DELETE FROM t_p50689379_parcel_tracking_syst.tracking_history WHERE id = %s RETURNING id", (history_id,))
+            cur.execute(f"DELETE FROM {SCHEMA}.tracking_history WHERE id = %s RETURNING id", (history_id,))
             conn.commit()
             deleted = cur.fetchone()
             
