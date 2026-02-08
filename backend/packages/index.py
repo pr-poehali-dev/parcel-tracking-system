@@ -77,22 +77,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cur.execute(
                 f"""INSERT INTO {SCHEMA}.packages 
-                (tracking_code, sender_name, sender_address, sender_country,
-                recipient_name, recipient_address, recipient_country, 
-                status, shipped_date, delivery_date)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (tracking_code, sender_name, sender_address, recipient_name, recipient_address, 
+                origin, destination, weight, status, estimated_delivery, shipped_date)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING *""",
                 (
                     tracking_code,
                     data.get('sender_name', ''),
                     data.get('sender_address', ''),
-                    data.get('sender_country', ''),
                     data.get('recipient_name', ''),
                     data.get('recipient_address', ''),
+                    data.get('sender_country', ''),
                     data.get('recipient_country', ''),
+                    data.get('weight', 1.0),
                     data.get('status', 'pending'),
-                    data.get('shipped_date'),
-                    data.get('delivery_date')
+                    data.get('delivery_date', data.get('shipped_date')),
+                    data.get('shipped_date')
                 )
             )
             conn.commit()
@@ -112,13 +112,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 f"""UPDATE {SCHEMA}.packages 
                 SET sender_name = %s,
                     sender_address = %s,
-                    sender_country = %s,
+                    origin = %s,
                     recipient_name = %s, 
                     recipient_address = %s,
-                    recipient_country = %s,
+                    destination = %s,
                     status = %s,
+                    weight = %s,
                     shipped_date = %s,
-                    delivery_date = %s,
+                    estimated_delivery = %s,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
                 RETURNING *""",
@@ -130,6 +131,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     data.get('recipient_address'),
                     data.get('recipient_country'),
                     data.get('status'),
+                    data.get('weight', 1.0),
                     data.get('shipped_date'),
                     data.get('delivery_date'),
                     package_id
