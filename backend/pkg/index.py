@@ -42,7 +42,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if tracking_code:
                 cur.execute(
-                    "SELECT * FROM packages WHERE tracking_code = %s",
+                    "SELECT * FROM t_p50689379_parcel_tracking_syst.packages WHERE tracking_code = %s",
                     (tracking_code,)
                 )
                 package = cur.fetchone()
@@ -60,7 +60,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'success': True, 'package': dict(package)}, default=str)
                 }
             else:
-                cur.execute("SELECT * FROM packages ORDER BY created_at DESC")
+                cur.execute("SELECT * FROM t_p50689379_parcel_tracking_syst.packages ORDER BY created_at DESC")
                 packages = cur.fetchall()
                 
                 return {
@@ -74,7 +74,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             tracking_code = data.get('tracking_code') or generate_tracking_code()
             
             cur.execute(
-                """INSERT INTO packages 
+                """INSERT INTO t_p50689379_parcel_tracking_syst.packages 
                 (tracking_code, sender_name, sender_address, sender_country,
                 recipient_name, recipient_address, recipient_country, 
                 status, shipped_date, delivery_date)
@@ -107,7 +107,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             package_id = data.get('id')
             
             cur.execute(
-                """UPDATE packages 
+                """UPDATE t_p50689379_parcel_tracking_syst.packages 
                 SET sender_name = %s,
                     sender_address = %s,
                     sender_country = %s,
@@ -152,7 +152,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'DELETE':
             package_id = event.get('queryStringParameters', {}).get('id')
             
-            cur.execute("DELETE FROM packages WHERE id = %s RETURNING id", (package_id,))
+            cur.execute("DELETE FROM t_p50689379_parcel_tracking_syst.packages WHERE id = %s RETURNING id", (package_id,))
             conn.commit()
             deleted = cur.fetchone()
             
