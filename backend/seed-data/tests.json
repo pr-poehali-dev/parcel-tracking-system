@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Create test package data",
+      "method": "POST",
+      "path": "/",
+      "expectedStatus": 201,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

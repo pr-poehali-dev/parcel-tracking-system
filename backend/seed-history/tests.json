@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Create test tracking history",
+      "method": "POST",
+      "path": "/",
+      "expectedStatus": 201,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

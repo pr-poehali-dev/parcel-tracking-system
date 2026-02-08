@@ -17,10 +17,10 @@ def get_db_connection():
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Manage packages - create, read, update, delete package tracking records
-    Args: event with httpMethod, body, queryStringParameters
+    Business: Manage parcels - create, read, update, delete parcel tracking records
+    Args: event with httpMethod, body, queryStringParameters, pathParams
           context with request_id attribute
-    Returns: HTTP response with package data in English
+    Returns: HTTP response with parcel data
     '''
     method: str = event.get('httpMethod', 'GET')
     
@@ -45,131 +45,103 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if tracking_code:
                 cur.execute(
-                    "SELECT * FROM packages WHERE tracking_code = %s",
+                    "SELECT * FROM parcels WHERE tracking_code = %s",
                     (tracking_code,)
                 )
-                package = cur.fetchone()
+                parcel = cur.fetchone()
                 
-                if not package:
+                if not parcel:
                     return {
                         'statusCode': 404,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'isBase64Encoded': False,
-                        'body': json.dumps({'success': False, 'error': 'Package not found'})
+                        'body': json.dumps({'error': 'Посылка не найдена'})
                     }
                 
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
-                    'body': json.dumps({'success': True, 'package': dict(package)}, default=str)
+                    'body': json.dumps(dict(parcel), default=str)
                 }
             else:
-                cur.execute("SELECT * FROM packages ORDER BY created_at DESC")
-                packages = cur.fetchall()
+                cur.execute("SELECT * FROM parcels ORDER BY created_at DESC")
+                parcels = cur.fetchall()
                 
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
-                    'body': json.dumps({'success': True, 'packages': [dict(p) for p in packages]}, default=str)
+                    'body': json.dumps([dict(p) for p in parcels], default=str)
                 }
         
         elif method == 'POST':
             data = json.loads(event.get('body', '{}'))
-            tracking_code = data.get('tracking_code') or generate_tracking_code()
+            tracking_code = generate_tracking_code()
             
             cur.execute(
-                """INSERT INTO packages 
-                (tracking_code, sender_name, sender_address, recipient_name, recipient_address, 
-                origin, destination, weight, status, estimated_delivery, notes, shipped_date, delivered_date)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """INSERT INTO parcels 
+                (tracking_code, recipient_first_name, recipient_last_name, recipient_address, current_location, status)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING *""",
                 (
                     tracking_code,
-                    data.get('sender_name', ''),
-                    data.get('sender_address', ''),
-                    data.get('recipient_name', ''),
+                    data.get('recipient_first_name', ''),
+                    data.get('recipient_last_name', ''),
                     data.get('recipient_address', ''),
-                    data.get('origin', ''),
-                    data.get('destination', ''),
-                    data.get('weight', 0),
-                    data.get('status', 'pending'),
-                    data.get('estimated_delivery'),
-                    data.get('notes', ''),
-                    data.get('shipped_date'),
-                    data.get('delivered_date')
+                    data.get('current_location', 'Склад приёма'),
+                    data.get('status', 'pending')
                 )
             )
             conn.commit()
-            new_package = cur.fetchone()
+            new_parcel = cur.fetchone()
             
             return {
                 'statusCode': 201,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
-                'body': json.dumps({'success': True, 'package': dict(new_package)}, default=str)
+                'body': json.dumps(dict(new_parcel), default=str)
             }
         
         elif method == 'PUT':
             data = json.loads(event.get('body', '{}'))
-            package_id = data.get('id')
+            parcel_id = data.get('id')
             
             cur.execute(
-                """UPDATE packages 
-                SET sender_name = %s,
-                    sender_address = %s,
-                    recipient_name = %s, 
+                """UPDATE parcels 
+                SET recipient_first_name = %s, 
+                    recipient_last_name = %s, 
                     recipient_address = %s, 
-                    origin = %s,
-                    destination = %s,
-                    weight = %s,
+                    current_location = %s, 
                     status = %s,
-                    estimated_delivery = %s,
-                    notes = %s,
-                    shipped_date = %s,
-                    delivered_date = %s,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
                 RETURNING *""",
                 (
-                    data.get('sender_name'),
-                    data.get('sender_address'),
-                    data.get('recipient_name'),
+                    data.get('recipient_first_name'),
+                    data.get('recipient_last_name'),
                     data.get('recipient_address'),
-                    data.get('origin'),
-                    data.get('destination'),
-                    data.get('weight'),
+                    data.get('current_location'),
                     data.get('status'),
-                    data.get('estimated_delivery'),
-                    data.get('notes', ''),
-                    data.get('shipped_date'),
-                    data.get('delivered_date'),
-                    package_id
+                    parcel_id
                 )
             )
             conn.commit()
-            updated_package = cur.fetchone()
+            updated_parcel = cur.fetchone()
             
-            if not updated_package:
+            if not updated_parcel:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
-                    'body': json.dumps({'success': False, 'error': 'Package not found'})
+                    'body': json.dumps({'error': 'Посылка не найдена'})
                 }
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
-                'body': json.dumps({'success': True, 'package': dict(updated_package)}, default=str)
+                'body': json.dumps(dict(updated_parcel), default=str)
             }
         
         elif method == 'DELETE':
-            package_id = event.get('queryStringParameters', {}).get('id')
+            parcel_id = event.get('queryStringParameters', {}).get('id')
             
-            cur.execute("DELETE FROM packages WHERE id = %s RETURNING id", (package_id,))
+            cur.execute("DELETE FROM parcels WHERE id = %s RETURNING id", (parcel_id,))
             conn.commit()
             deleted = cur.fetchone()
             
@@ -177,22 +149,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'isBase64Encoded': False,
-                    'body': json.dumps({'success': False, 'error': 'Package not found'})
+                    'body': json.dumps({'error': 'Посылка не найдена'})
                 }
             
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'isBase64Encoded': False,
                 'body': json.dumps({'success': True})
             }
         
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'isBase64Encoded': False,
-            'body': json.dumps({'success': False, 'error': 'Method not allowed'})
+            'body': json.dumps({'error': 'Method not allowed'})
         }
     
     finally:

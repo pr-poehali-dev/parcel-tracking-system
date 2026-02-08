@@ -1,12 +1,24 @@
 {
   "tests": [
     {
-      "name": "Get packages",
+      "name": "Get all packages",
       "method": "GET",
       "path": "/",
       "expectedStatus": 200,
       "expectedBody": {
-        "success": true
+        "success": true,
+        "packages": []
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get package by tracking code - not found",
+      "method": "GET",
+      "path": "/?tracking_code=AB2024999999",
+      "expectedStatus": 404,
+      "expectedBody": {
+        "success": false,
+        "error": "string"
       },
       "bodyMatcher": "partial"
     }

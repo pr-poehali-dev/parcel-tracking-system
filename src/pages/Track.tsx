@@ -1,28 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Icon from '@/components/ui/icon';
+import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import * as FlagIcons from 'country-flag-icons/react/3x2';
+import Icon from '@/components/ui/icon';
+import { Package } from '@/types/package';
+import { CountryFlag } from '@/components/ui/country-flag';
 
-const PACKAGES_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
-const TRACKING_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
-
-interface Package {
-  id: number;
-  tracking_code: string;
-  sender_name: string;
-  sender_address: string;
-  sender_country: string;
-  recipient_name: string;
-  recipient_address: string;
-  recipient_country: string;
-  status: string;
-  shipped_date: string;
-  delivery_date: string;
-}
-
-interface TrackingEvent {
+interface TrackingHistory {
   id: number;
   location: string;
   status: string;
@@ -30,249 +15,232 @@ interface TrackingEvent {
   event_date: string;
 }
 
-const countryToCode: Record<string, string> = {
-  'United States': 'US',
-  'China': 'CN',
-  'Russia': 'RU',
-  'United Kingdom': 'GB',
-  'Germany': 'DE',
-  'France': 'FR',
-  'Japan': 'JP',
-  'South Korea': 'KR',
-  'Canada': 'CA',
-  'Australia': 'AU',
-  'Brazil': 'BR',
-  'India': 'IN',
-  'Mexico': 'MX',
-  'Spain': 'ES',
-  'Italy': 'IT',
-  'Netherlands': 'NL',
-  'Belgium': 'BE',
-  'Switzerland': 'CH',
-  'Sweden': 'SE',
-  'Norway': 'NO',
-};
-
-const CountryFlag = ({ countryName }: { countryName: string }) => {
-  const countryCode = countryToCode[countryName];
-  if (!countryCode) {
-    return <span className="text-2xl">🌍</span>;
-  }
-  const FlagComponent = (FlagIcons as Record<string, React.ComponentType<{ className?: string }>>)[countryCode];
-  if (!FlagComponent) {
-    return <span className="text-2xl">🌍</span>;
-  }
-  return <FlagComponent className="w-8 h-6 rounded" />;
+const statusConfig = {
+  pending: { label: 'Pending', variant: 'secondary' as const, icon: 'Package' },
+  in_transit: { label: 'In Transit', variant: 'default' as const, icon: 'Truck' },
+  delivered: { label: 'Delivered', variant: 'success' as const, icon: 'CheckCircle2' },
+  returned: { label: 'Returned', variant: 'destructive' as const, icon: 'RotateCcw' }
 };
 
 export default function Track() {
   const { trackingCode } = useParams<{ trackingCode: string }>();
-  const navigate = useNavigate();
   const [packageData, setPackageData] = useState<Package | null>(null);
-  const [history, setHistory] = useState<TrackingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [trackingHistory, setTrackingHistory] = useState<TrackingHistory[]>([]);
 
   useEffect(() => {
-    if (trackingCode) {
-      loadPackageData();
-    }
+    const fetchPackage = async () => {
+      if (!trackingCode) return;
+      
+      try {
+        const response = await fetch(`https://functions.poehali.dev/377be8f8-6ae5-4538-9bd0-310ecc0aeec8?tracking_code=${trackingCode}`);
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          setPackageData(data.package);
+          await fetchTrackingHistory(data.package.id);
+        } else {
+          setError(data.error || 'Package not found');
+        }
+      } catch (err) {
+        setError('Failed to fetch package data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPackage();
   }, [trackingCode]);
 
-  const loadPackageData = async () => {
+  const fetchTrackingHistory = async (packageId: number) => {
     try {
-      setLoading(true);
-      setError('');
-
-      const pkgResponse = await fetch(`${PACKAGES_API}?tracking_code=${trackingCode}`);
-      const pkgData = await pkgResponse.json();
-
-      if (!pkgData.success) {
-        setError('Package not found');
-        setLoading(false);
-        return;
+      const response = await fetch(`https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6?package_id=${packageId}`);
+      const data = await response.json();
+      if (data.success) {
+        setTrackingHistory(data.history || []);
       }
-
-      setPackageData(pkgData.package);
-
-      const historyResponse = await fetch(`${TRACKING_API}?package_id=${pkgData.package.id}`);
-      const historyData = await historyResponse.json();
-
-      if (historyData.success) {
-        setHistory(historyData.history || []);
-      }
-
-      setLoading(false);
     } catch (err) {
-      setError('Failed to load package data');
-      setLoading(false);
+      console.error('Failed to fetch tracking history', err);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#0f1729]">
-      {/* Header */}
-      <header className="border-b border-[#1e2a47] py-4">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Icon name="Package" size={32} className="text-[#3b82f6]" />
-              <div>
-                <h1 className="text-xl font-bold text-white">Aboba Express</h1>
-                <p className="text-xs text-gray-400">Global Shipping Service</p>
-              </div>
-            </div>
-            <Button variant="outline" onClick={() => navigate('/')} className="border-[#1e2a47] text-white">
-              <Icon name="Home" size={18} className="mr-2" />
-              Home
-            </Button>
-          </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {loading ? (
-          <div className="text-center py-20">
-            <Icon name="Loader2" size={48} className="mx-auto text-[#3b82f6] animate-spin mb-4" />
-            <p className="text-gray-400">Loading package information...</p>
-          </div>
-        ) : error ? (
-          <div className="max-w-2xl mx-auto">
-            <Card className="bg-[#1a2332] border-[#1e2a47] p-12 text-center">
-              <Icon name="AlertCircle" size={64} className="mx-auto text-red-400 mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-2">Package Not Found</h2>
-              <p className="text-gray-400 mb-6">
-                We couldn't find a package with tracking code: <span className="text-[#3b82f6]">{trackingCode}</span>
-              </p>
-              <Button onClick={() => navigate('/')} className="bg-[#3b82f6] hover:bg-[#2563eb]">
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Icon name="Package" size={48} className="mx-auto mb-4 text-primary animate-pulse" />
+          <p className="text-muted-foreground">Loading tracking information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !packageData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <Icon name="AlertCircle" size={48} className="text-destructive" />
+            </div>
+            <CardTitle className="text-center">Tracking Not Found</CardTitle>
+            <CardDescription className="text-center">
+              We couldn't find a package with tracking code: <span className="font-mono font-semibold">{trackingCode}</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Link to="/">
+              <Button>
                 <Icon name="ArrowLeft" size={16} className="mr-2" />
                 Back to Home
               </Button>
-            </Card>
-          </div>
-        ) : packageData ? (
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Package Info Card */}
-            <Card className="bg-[#1a2332] border-[#1e2a47] p-6">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Tracking Number</h2>
-                  <p className="text-[#3b82f6] text-3xl font-bold">{packageData.tracking_code}</p>
-                </div>
-                <div className="px-4 py-2 rounded-lg bg-[#3b82f6]/20 border border-[#3b82f6]">
-                  <span className="text-[#3b82f6] font-semibold text-lg capitalize">
-                    {packageData.status.replace('_', ' ')}
-                  </span>
-                </div>
-              </div>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
+  const status = statusConfig[packageData.status as keyof typeof statusConfig];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <Link to="/">
+          <Button variant="ghost" className="mb-6">
+            <Icon name="ArrowLeft" size={16} className="mr-2" />
+            Back to Home
+          </Button>
+        </Link>
+
+        <div className="max-w-3xl mx-auto space-y-6">
+          <Card className="animate-fade-in">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <Icon name={status.icon} size={28} />
+                    Package Tracking
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    Tracking Code: <span className="font-mono font-semibold text-lg">{packageData.tracking_code}</span>
+                  </CardDescription>
+                </div>
+                <Badge variant={status.variant} className="text-sm px-3 py-1">
+                  {status.label}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Sender */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Icon name="Send" size={18} />
-                    <span className="font-semibold">Sender</span>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Sender</p>
+                    <p className="font-semibold">{packageData.sender_name}</p>
+                    <p className="text-sm text-muted-foreground">{packageData.sender_address}</p>
                   </div>
-                  <div className="pl-6 space-y-1">
-                    <p className="text-white font-semibold">{packageData.sender_name}</p>
-                    <p className="text-gray-400 text-sm">{packageData.sender_address}</p>
-                    <div className="flex items-center gap-2 text-sm">
-                      <CountryFlag countryName={packageData.sender_country} />
-                      <span className="text-gray-400">{packageData.sender_country}</span>
-                    </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Origin</p>
+                    <p className="font-medium flex items-center gap-2">
+                      <CountryFlag countryName={packageData.origin} />
+                      {packageData.origin}
+                    </p>
                   </div>
                 </div>
 
-                {/* Recipient */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Icon name="MapPin" size={18} />
-                    <span className="font-semibold">Recipient</span>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Recipient</p>
+                    <p className="font-semibold">{packageData.recipient_name}</p>
+                    <p className="text-sm text-muted-foreground">{packageData.recipient_address}</p>
                   </div>
-                  <div className="pl-6 space-y-1">
-                    <p className="text-white font-semibold">{packageData.recipient_name}</p>
-                    <p className="text-gray-400 text-sm">{packageData.recipient_address}</p>
-                    <div className="flex items-center gap-2 text-sm">
-                      <CountryFlag countryName={packageData.recipient_country} />
-                      <span className="text-gray-400">{packageData.recipient_country}</span>
-                    </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Destination</p>
+                    <p className="font-medium flex items-center gap-2">
+                      <CountryFlag countryName={packageData.destination} />
+                      {packageData.destination}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Dates */}
-              <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[#1e2a47]">
-                {packageData.shipped_date && (
-                  <div className="flex items-center gap-3">
-                    <Icon name="Calendar" size={18} className="text-[#3b82f6]" />
-                    <div>
-                      <p className="text-gray-400 text-sm">Shipped Date</p>
-                      <p className="text-white">{new Date(packageData.shipped_date).toLocaleDateString()}</p>
-                    </div>
+              <div className="border-t pt-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Weight</p>
+                    <p className="font-medium">{packageData.weight} kg</p>
                   </div>
-                )}
-                {packageData.delivery_date && (
-                  <div className="flex items-center gap-3">
-                    <Icon name="Clock" size={18} className="text-[#3b82f6]" />
-                    <div>
-                      <p className="text-gray-400 text-sm">Estimated Delivery</p>
-                      <p className="text-white">{new Date(packageData.delivery_date).toLocaleDateString()}</p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Shipped Date</p>
+                    <p className="font-medium">
+                      {packageData.shipped_date ? new Date(packageData.shipped_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'Not shipped yet'}
+                    </p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm text-muted-foreground">Delivered Date</p>
+                    <p className="font-medium">
+                      {packageData.delivered_date ? new Date(packageData.delivered_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'Not delivered yet'}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </Card>
 
-            {/* Tracking History */}
-            <Card className="bg-[#1a2332] border-[#1e2a47] p-6">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <Icon name="Clock" size={24} className="text-[#3b82f6]" />
+              {packageData.notes && (
+                <div className="border-t pt-4">
+                  <p className="text-sm text-muted-foreground mb-1">Notes</p>
+                  <p className="text-sm">{packageData.notes}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Icon name="MapPin" size={20} />
                 Tracking History
-              </h3>
-
-              {history.length === 0 ? (
-                <div className="text-center py-8">
-                  <Icon name="Package" size={48} className="mx-auto text-gray-600 mb-3" />
-                  <p className="text-gray-400">No tracking events yet</p>
-                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {trackingHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No tracking events yet</p>
               ) : (
                 <div className="space-y-4">
-                  {history.map((event, index) => (
+                  {trackingHistory.map((event, index) => (
                     <div key={event.id} className="flex gap-4">
-                      {/* Timeline */}
                       <div className="flex flex-col items-center">
-                        <div className={`w-4 h-4 rounded-full ${index === 0 ? 'bg-[#3b82f6]' : 'bg-[#1e2a47]'}`} />
-                        {index !== history.length - 1 && (
-                          <div className="w-0.5 h-full bg-[#1e2a47] mt-2" />
-                        )}
+                        <div className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-primary' : 'bg-muted'}`}></div>
+                        {index < trackingHistory.length - 1 && <div className="w-0.5 h-full bg-border mt-1"></div>}
                       </div>
-
-                      {/* Event Details */}
                       <div className="flex-1 pb-6">
-                        <div className="bg-[#0f1729] border border-[#1e2a47] rounded-lg p-4 space-y-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="text-white font-semibold">{event.location}</p>
-                              <p className="text-[#3b82f6] text-sm">{event.status}</p>
-                            </div>
-                            <span className="text-gray-500 text-sm">
-                              {new Date(event.event_date).toLocaleString()}
-                            </span>
-                          </div>
-                          {event.description && (
-                            <p className="text-gray-400 text-sm">{event.description}</p>
-                          )}
-                        </div>
+                        <p className="font-semibold">{event.location}</p>
+                        <p className="text-sm text-muted-foreground">{event.status}</p>
+                        {event.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(event.event_date).toLocaleString('en-US')}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </Card>
-          </div>
-        ) : null}
-      </main>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
