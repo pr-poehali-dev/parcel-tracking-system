@@ -8,9 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PackageForm } from '@/components/PackageForm';
 import { TrackingHistoryManager } from '@/components/TrackingHistoryManager';
 
-// Временно хардкодим URL, позже обновим из func2url.json
-const PACKAGES_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
-const TRACKING_API = 'https://functions.poehali.dev/YOUR_URL_HERE';
+const PACKAGES_API = 'https://functions.poehali.dev/6b965204-6ba8-46d8-9235-eefd81fce6ea';
+const TRACKING_API = 'https://functions.poehali.dev/be8f004b-9184-46b5-b9f9-2874df3a5fdd';
 
 interface Package {
   id: number;
@@ -75,16 +74,6 @@ export default function Admin() {
   };
 
   const handleCreatePackage = async (formData: Partial<Package>) => {
-    // Проверка что backend задеплоился
-    if (PACKAGES_API.includes('YOUR_URL_HERE')) {
-      toast({ 
-        title: 'Backend функции ещё не задеплоились', 
-        description: 'Подожди несколько минут и обнови страницу',
-        variant: 'destructive' 
-      });
-      return;
-    }
-
     try {
       const response = await fetch(PACKAGES_API, {
         method: 'POST',
