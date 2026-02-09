@@ -8,7 +8,7 @@ import { PackageManagement } from '@/components/PackageManagement';
 import { PackageDialog } from '@/components/PackageDialog';
 import { AdminLogin } from '@/components/AdminLogin';
 
-const API_URL = 'https://functions.poehali.dev/377be8f8-6ae5-4538-9bd0-310ecc0aeec8';
+const API_URL = 'https://functions.poehali.dev/1c205e38-f202-4c5a-a3b1-07344e13268f';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'success' | 'destructive' }> = {
   pending: { label: 'Pending', variant: 'secondary' },

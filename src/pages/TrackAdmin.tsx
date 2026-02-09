@@ -51,7 +51,7 @@ export default function TrackAdmin() {
       if (!trackingCode) return;
       
       try {
-        const response = await fetch(`https://functions.poehali.dev/377be8f8-6ae5-4538-9bd0-310ecc0aeec8?tracking_code=${trackingCode}`);
+        const response = await fetch(`https://functions.poehali.dev/1c205e38-f202-4c5a-a3b1-07344e13268f?tracking_code=${trackingCode}`);
         const data = await response.json();
         
         if (response.ok && data.success) {
@@ -72,7 +72,7 @@ export default function TrackAdmin() {
 
   const fetchTrackingHistory = async (packageId: number) => {
     try {
-      const response = await fetch(`https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6?package_id=${packageId}`);
+      const response = await fetch(`https://functions.poehali.dev/407d591f-86ae-4560-9454-4accddae7ff4?package_id=${packageId}`);
       const data = await response.json();
       if (data.success) {
         setTrackingHistory(data.history || []);
@@ -85,7 +85,7 @@ export default function TrackAdmin() {
   const handleAddHistory = async (formData: Partial<TrackingHistory>) => {
     if (!packageData) return;
     try {
-      const response = await fetch('https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6', {
+      const response = await fetch('https://functions.poehali.dev/407d591f-86ae-4560-9454-4accddae7ff4', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, package_id: packageData.id }),
@@ -102,7 +102,7 @@ export default function TrackAdmin() {
 
   const handleUpdateHistory = async (formData: TrackingHistory) => {
     try {
-      const response = await fetch('https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6', {
+      const response = await fetch('https://functions.poehali.dev/407d591f-86ae-4560-9454-4accddae7ff4', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -120,7 +120,7 @@ export default function TrackAdmin() {
 
   const handleDeleteHistory = async (historyId: number) => {
     try {
-      const response = await fetch(`https://functions.poehali.dev/7fa7f4b8-f0c3-4425-b689-226a8c9cd6e6?id=${historyId}`, {
+      const response = await fetch(`https://functions.poehali.dev/407d591f-86ae-4560-9454-4accddae7ff4?id=${historyId}`, {
         method: 'DELETE',
       });
       if (response.ok) {
