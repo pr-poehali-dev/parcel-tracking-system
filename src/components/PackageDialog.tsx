@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Package } from '@/types/package';
 interface PackageDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: Partial<Package>) => void;
   editingPackage: Package | null;
   generateTrackingCode: () => string;
 }
@@ -22,25 +22,30 @@ const getDefaultDeliveryDate = () => {
   return date.toISOString().split('T')[0];
 };
 
+const getDefaultFormData = (generateTrackingCode: () => string) => ({
+  tracking_code: generateTrackingCode(),
+  sender_name: '',
+  sender_address: '',
+  recipient_name: '',
+  recipient_address: '',
+  weight: 0,
+  status: 'pending',
+  origin: '',
+  destination: '',
+  estimated_delivery: getDefaultDeliveryDate(),
+  notes: '',
+});
+
 export function PackageDialog({ isOpen, onClose, onSubmit, editingPackage, generateTrackingCode }: PackageDialogProps) {
-  const [formData, setFormData] = useState<Partial<Package>>(() => {
+  const [formData, setFormData] = useState<Partial<Package>>(getDefaultFormData(generateTrackingCode));
+
+  useEffect(() => {
     if (editingPackage) {
-      return editingPackage;
+      setFormData(editingPackage);
+    } else {
+      setFormData(getDefaultFormData(generateTrackingCode));
     }
-    return {
-      tracking_code: generateTrackingCode(),
-      sender_name: '',
-      sender_address: '',
-      recipient_name: '',
-      recipient_address: '',
-      weight: 0,
-      status: 'pending',
-      origin: '',
-      destination: '',
-      estimated_delivery: getDefaultDeliveryDate(),
-      notes: '',
-    };
-  });
+  }, [editingPackage, generateTrackingCode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

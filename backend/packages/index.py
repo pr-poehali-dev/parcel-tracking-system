@@ -13,7 +13,18 @@ def generate_tracking_code() -> str:
 
 def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
-    return psycopg2.connect(dsn, cursor_factory=RealDictCursor)
+    conn = psycopg2.connect(dsn, cursor_factory=RealDictCursor)
+    conn.autocommit = True
+    return conn
+
+def escape_sql_string(value):
+    if value is None:
+        return 'NULL'
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, str):
+        return "'" + value.replace("'", "''") + "'"
+    return 'NULL'
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -44,10 +55,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             tracking_code = event.get('queryStringParameters', {}).get('tracking_code')
             
             if tracking_code:
-                cur.execute(
-                    "SELECT * FROM packages WHERE tracking_code = %s",
-                    (tracking_code,)
-                )
+                query = f"SELECT * FROM packages WHERE tracking_code = {escape_sql_string(tracking_code)}"
+                cur.execute(query)
                 package = cur.fetchone()
                 
                 if not package:
@@ -79,29 +88,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             data = json.loads(event.get('body', '{}'))
             tracking_code = data.get('tracking_code') or generate_tracking_code()
             
-            cur.execute(
-                """INSERT INTO packages 
+            query = f"""INSERT INTO packages 
                 (tracking_code, sender_name, sender_address, recipient_name, recipient_address, 
                 origin, destination, weight, status, estimated_delivery, notes, shipped_date, delivered_date)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING *""",
-                (
-                    tracking_code,
-                    data.get('sender_name', ''),
-                    data.get('sender_address', ''),
-                    data.get('recipient_name', ''),
-                    data.get('recipient_address', ''),
-                    data.get('origin', ''),
-                    data.get('destination', ''),
-                    data.get('weight', 0),
-                    data.get('status', 'pending'),
-                    data.get('estimated_delivery'),
-                    data.get('notes', ''),
-                    data.get('shipped_date'),
-                    data.get('delivered_date')
+                VALUES (
+                    {escape_sql_string(tracking_code)},
+                    {escape_sql_string(data.get('sender_name', ''))},
+                    {escape_sql_string(data.get('sender_address', ''))},
+                    {escape_sql_string(data.get('recipient_name', ''))},
+                    {escape_sql_string(data.get('recipient_address', ''))},
+                    {escape_sql_string(data.get('origin', ''))},
+                    {escape_sql_string(data.get('destination', ''))},
+                    {escape_sql_string(data.get('weight', 0))},
+                    {escape_sql_string(data.get('status', 'pending'))},
+                    {escape_sql_string(data.get('estimated_delivery'))},
+                    {escape_sql_string(data.get('notes', ''))},
+                    {escape_sql_string(data.get('shipped_date'))},
+                    {escape_sql_string(data.get('delivered_date'))}
                 )
-            )
-            conn.commit()
+                RETURNING *"""
+            cur.execute(query)
             new_package = cur.fetchone()
             
             return {
@@ -115,40 +121,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             data = json.loads(event.get('body', '{}'))
             package_id = data.get('id')
             
-            cur.execute(
-                """UPDATE packages 
-                SET sender_name = %s,
-                    sender_address = %s,
-                    recipient_name = %s, 
-                    recipient_address = %s, 
-                    origin = %s,
-                    destination = %s,
-                    weight = %s,
-                    status = %s,
-                    estimated_delivery = %s,
-                    notes = %s,
-                    shipped_date = %s,
-                    delivered_date = %s,
+            query = f"""UPDATE packages 
+                SET sender_name = {escape_sql_string(data.get('sender_name'))},
+                    sender_address = {escape_sql_string(data.get('sender_address'))},
+                    recipient_name = {escape_sql_string(data.get('recipient_name'))}, 
+                    recipient_address = {escape_sql_string(data.get('recipient_address'))}, 
+                    origin = {escape_sql_string(data.get('origin'))},
+                    destination = {escape_sql_string(data.get('destination'))},
+                    weight = {escape_sql_string(data.get('weight'))},
+                    status = {escape_sql_string(data.get('status'))},
+                    estimated_delivery = {escape_sql_string(data.get('estimated_delivery'))},
+                    notes = {escape_sql_string(data.get('notes', ''))},
+                    shipped_date = {escape_sql_string(data.get('shipped_date'))},
+                    delivered_date = {escape_sql_string(data.get('delivered_date'))},
                     updated_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-                RETURNING *""",
-                (
-                    data.get('sender_name'),
-                    data.get('sender_address'),
-                    data.get('recipient_name'),
-                    data.get('recipient_address'),
-                    data.get('origin'),
-                    data.get('destination'),
-                    data.get('weight'),
-                    data.get('status'),
-                    data.get('estimated_delivery'),
-                    data.get('notes', ''),
-                    data.get('shipped_date'),
-                    data.get('delivered_date'),
-                    package_id
-                )
-            )
-            conn.commit()
+                WHERE id = {escape_sql_string(package_id)}
+                RETURNING *"""
+            cur.execute(query)
             updated_package = cur.fetchone()
             
             if not updated_package:
@@ -169,8 +158,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'DELETE':
             package_id = event.get('queryStringParameters', {}).get('id')
             
-            cur.execute("DELETE FROM packages WHERE id = %s RETURNING id", (package_id,))
-            conn.commit()
+            query = f"DELETE FROM packages WHERE id = {escape_sql_string(package_id)} RETURNING id"
+            cur.execute(query)
             deleted = cur.fetchone()
             
             if not deleted:

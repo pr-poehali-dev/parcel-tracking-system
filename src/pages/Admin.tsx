@@ -74,7 +74,7 @@ export default function Admin() {
     }
   };
 
-  const handleUpdatePackage = async (formData: Package) => {
+  const handleUpdatePackage = async (formData: Partial<Package>) => {
     try {
       const response = await fetch(API_URL, {
         method: 'PUT',
@@ -87,6 +87,9 @@ export default function Admin() {
         setIsDialogOpen(false);
         setEditingPackage(null);
         loadPackages();
+      } else {
+        const errorData = await response.json();
+        toast({ title: errorData.error || 'Failed to update package', variant: 'destructive' });
       }
     } catch (error) {
       toast({ title: 'Failed to update package', variant: 'destructive' });
@@ -108,7 +111,7 @@ export default function Admin() {
     }
   };
 
-  const handleDialogSubmit = (formData: any) => {
+  const handleDialogSubmit = (formData: Partial<Package>) => {
     if (editingPackage) {
       handleUpdatePackage(formData);
     } else {
